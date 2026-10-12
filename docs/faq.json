@@ -1,0 +1,49 @@
+[
+  {
+    "id": "software-dim",
+    "q": "Why does the app fall back to software dimming?",
+    "a": "Not every display answers DDC/CI. Rather than show a slider that does nothing, the app dims the picture through the display's gamma table, which every display accepts. It lowers the picture, not the backlight, never goes below 10 %, and lasts only while the app runs. The row carries a half-filled circle so you know which kind of dimming you have. The choice is made again on launch, plug, wake and popover open, so a monitor that starts answering gets real backlight control without a restart."
+  },
+  {
+    "id": "non-dell",
+    "q": "Does it work with non-Dell monitors?",
+    "a": "Probably, but it is verified on two Dell models only, a U2723QE and a U2424HE. Brightness is a standard DDC/CI feature that any display with DDC/CI should answer, and a display that does not answer falls back to software dimming. On another brand, the glyph on the row tells you which path it took."
+  },
+  {
+    "id": "no-permissions",
+    "q": "Why does it need no permissions?",
+    "a": "Nothing it does sits behind a macOS privacy prompt. It talks to displays through IOKit, sets a gamma table and a brightness level, and receives scroll events on its own menu bar item rather than through a global event tap, so there is no Accessibility request. It declares no usage descriptions and no entitlements, and it never touches your camera, microphone, files or network."
+  },
+  {
+    "id": "private-apis",
+    "q": "Which private APIs does it use, and what if macOS removes them?",
+    "a": "Two, both resolved at runtime with dlsym: IOAVService in IOKit for DDC/CI on Apple silicon (DDC/IOAVBridge.swift), and DisplayServices for the built-in display (Display/Backends.swift). If a future macOS removes one, the lookup fails, the app keeps running, and the affected displays fall back to software dimming instead of the app failing to launch. Private means unsupported: Apple can change them without notice."
+  },
+  {
+    "id": "uninstall",
+    "q": "How do I uninstall it?",
+    "a": "Turn off Open at login in the popover, quit from it, and delete the app. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays. There is no installer, no helper and no root step to undo.",
+    "a_released": "Turn off Open at login in the popover, quit from it, and delete the app, or run brew uninstall --zap --cask dell-monitor-console. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays. There is no installer, no helper and no root step to undo."
+  },
+  {
+    "id": "at-login",
+    "q": "Is it safe to leave open at login?",
+    "a": "Yes, that is the intended use. It is a menu bar item with no Dock icon and no timers: 27 to 29 MB of memory and 0.0 % CPU when idle, measured on one Mac. It never polls your monitors; it reads on launch, when a display is plugged in or out, on wake, and when you open the popover. Open at login is a switch in the popover, off by default, so move the app to /Applications first. With it on, a software dim is applied again after each login."
+  },
+  {
+    "id": "with-dell-app",
+    "q": "Does it conflict with Dell's own app?",
+    "a": "Yes, they can run side by side. Both talk to a display over its DDC/CI channel, and a display with another client on that channel hands each client the other's answers. In a probe run with Dell's app polling, 3 of 9 brightness reads on one display came back as answers to features nobody had asked for. This app rejects any reply whose echoed feature or checksum is wrong, asks again, and reads each level back before showing it as set, so the cost is an extra retry, not a wrong number. If a row ever shows a question mark, quit one of the two."
+  },
+  {
+    "id": "question-mark",
+    "q": "What does the question mark on a row mean?",
+    "a": "The write went through but the display did not confirm the level. After each write the app reads the level back, up to three times, and shows it as set only when it matches. A warning triangle means the display did not accept the change at all."
+  },
+  {
+    "id": "released",
+    "q": "Is there a download, and under what licence?",
+    "a": "Not yet. There is no DMG, no Homebrew cask and no GitHub release; you build it from source, and there is nothing to fetch. A licence has not been chosen yet.",
+    "a_released": "Yes. Download the DMG from the latest GitHub release, install with brew install --cask ashwingopalsamy/tap/dell-monitor-console, or build it from source. A licence has not been chosen yet."
+  }
+]
