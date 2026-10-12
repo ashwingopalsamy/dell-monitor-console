@@ -4,6 +4,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions: [Sem
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-12
+
+### Changed
+- The menu bar item is only as wide as its glyph, and the glyph is the app icon's dial: eleven rays round a centre dot.
+- The lit rays follow the brightness of the display you used last. The centre dot is there while a display is
+  detected, and gone when none is.
+
 ## [1.1.0] - 2026-10-12
 
 ### Changed

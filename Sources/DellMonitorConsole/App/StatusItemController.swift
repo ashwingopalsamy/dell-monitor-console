@@ -1,16 +1,9 @@
 import AppKit
 import Observation
 
-private let glyphPointSize: CGFloat = 15
-private let badgeDiameter: CGFloat = 6
-private let badgeGap: CGFloat = 1.5
-
 // NSObject is required: the status button sends its action through the Objective-C runtime.
 @MainActor
 final class StatusItemController: NSObject {
-    // Fixed, so the item never shifts its neighbours except for the moment a scroll shows the new level.
-    private static let itemWidth: CGFloat = 40
-    private static let feedbackWidth: CGFloat = 72
     private static let feedbackDuration: Duration = .milliseconds(1200)
     /// Trackpad points of scrolling per 1%, and percent per notch of a wheel.
     private static let pointsPerPercent: CGFloat = 6
@@ -22,10 +15,13 @@ final class StatusItemController: NSObject {
     private var scrollMonitor: Any?
     private var scrollRemainder: CGFloat = 0
     private var feedback: Task<Void, Never>?
+    /// The level shown beside the glyph for a moment after a scroll. nil the rest of the time.
+    private var feedbackText: String?
 
     init(store: BrightnessStore) {
         self.store = store
-        statusItem = NSStatusBar.system.statusItem(withLength: StatusItemController.itemWidth)
+        // Only as wide as the glyph. A scroll adds the new level beside it for a moment.
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = PopoverWindow(store: store)
         super.init()
 
@@ -83,68 +79,48 @@ final class StatusItemController: NSObject {
         showFeedback("\(result.percent)%", about: result.name)
     }
 
-    /// The new level, in the item itself, for a moment. The popover is not opened for a scroll.
+    /// The new level, beside the glyph, for a moment. The popover is not opened for a scroll.
     private func showFeedback(_ text: String, about name: String) {
-        guard let button = statusItem.button else { return }
-        statusItem.length = Self.feedbackWidth
-        button.title = text
-        button.imagePosition = .imageLeading
-        button.toolTip = name
+        feedbackText = text
+        refreshButton()
+        statusItem.button?.toolTip = name
         feedback?.cancel()
         feedback = Task { @MainActor [weak self] in
             try? await Task.sleep(for: Self.feedbackDuration)
             guard !Task.isCancelled, let self else { return }
-            self.statusItem.length = Self.itemWidth
+            self.feedbackText = nil
             self.refreshButton()
         }
     }
 
     // MARK: - Button
 
-    // Observation reports changes before they land, so the re-read is deferred to the next main-actor turn and
-    // tracking is re-armed from there.
+    // Observation reports changes before they land, so the re-read is deferred to the next main-actor turn and tracking
+    // is re-armed from there.
     private func trackSnapshots() {
         withObservationTracking {
-            if feedback == nil || feedback?.isCancelled == true { refreshButton() }
+            refreshButton()
         } onChange: { [weak self] in
             Task { @MainActor in self?.trackSnapshots() }
         }
     }
 
+    /// The glyph follows the display you last used: its brightness lights the rays, and the centre dot says a display
+    /// is there at all.
     private func refreshButton() {
         guard let button = statusItem.button else { return }
-        let attention = store.needsAttention
-        button.image = attention ? Self.badgedGlyph("sun.max") : Self.glyph("sun.max")
-        button.title = ""
-        button.imagePosition = .imageOnly
-        let summary = attention ? "a display needs attention" : "\(store.rows.count) displays"
-        button.setAccessibilityLabel("Dell Monitor Console, \(summary)")
-        button.toolTip = "Brightness"
-    }
-
-    private nonisolated static func glyph(_ name: String) -> NSImage? {
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
-            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: glyphPointSize, weight: .regular))
-        image?.isTemplate = true
-        return image
-    }
-
-    /// The glyph with a 6pt dot in its top-right corner, cut out of the glyph by a 1.5pt gap. Still a template.
-    private static func badgedGlyph(_ name: String) -> NSImage? {
-        guard let size = glyph(name)?.size else { return nil }
-        let image = NSImage(size: size, flipped: false) { rect in
-            guard let base = glyph(name) else { return false }
-            base.draw(in: rect)
-            let dot = NSRect(x: rect.maxX - badgeDiameter, y: rect.maxY - badgeDiameter,
-                             width: badgeDiameter, height: badgeDiameter)
-            NSGraphicsContext.current?.compositingOperation = .clear
-            NSBezierPath(ovalIn: dot.insetBy(dx: -badgeGap, dy: -badgeGap)).fill()
-            NSGraphicsContext.current?.compositingOperation = .sourceOver
-            NSColor.black.setFill()
-            NSBezierPath(ovalIn: dot).fill()
-            return true
+        let rows = store.rows
+        let focus = store.lastUsedID.flatMap { id in rows.first { $0.id == id } } ?? rows.first
+        button.image = StatusIcon.image(level: focus?.percent, attention: store.needsAttention)
+        if let feedbackText {
+            button.title = feedbackText
+            button.imagePosition = .imageLeading
+        } else {
+            button.title = ""
+            button.imagePosition = .imageOnly
+            button.toolTip = focus.map { "\($0.name), \($0.percent)%" } ?? "No displays found"
         }
-        image.isTemplate = true
-        return image
+        let summary = focus.map { "\($0.name), \($0.percent) percent" } ?? "no displays found"
+        button.setAccessibilityLabel("Dell Monitor Console, \(summary)")
     }
 }
