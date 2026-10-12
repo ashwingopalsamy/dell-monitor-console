@@ -1,0 +1,53 @@
+name: Bug
+description: Something does not work
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Finder › Get Info on the app, or the commit if you built from source.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac model
+      description: For example MacBook Pro 14-inch (M4 Pro).
+    validations:
+      required: true
+  - type: textarea
+    id: monitors
+    attributes:
+      label: Monitor models
+      description: For example U2723QE. List each one if you use several.
+    validations:
+      required: true
+  - type: textarea
+    id: connection
+    attributes:
+      label: How it is connected
+      description: USB-C, DisplayPort, HDMI, or dock, per monitor. Name the dock if one is in the path.
+    validations:
+      required: true
+  - type: textarea
+    id: list
+    attributes:
+      label: DellMonitorConsole --list output
+      description: "Run it from the app: Dell Monitor Console.app/Contents/MacOS/DellMonitorConsole --list. Paste the output, or say why it did not run."
+      render: text
+    validations:
+      required: true
