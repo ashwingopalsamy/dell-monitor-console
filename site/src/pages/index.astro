@@ -25,11 +25,7 @@ const nav: { id: string; label: string; icon: string[] }[] = [
 ];
 
 const perms = facts.permissions.theirs;
-// What each key figure means, in a few words. The size and memory margins come from the measurements.
-const say: Record<string, string> = {
-  "CPU, idle": "Nothing while idle",
-  "Privacy permissions": "None asked for",
-};
+
 ---
 <Base home title={NAME} description={description} nodes={nodes}>
   <a class="skip" href="#main">Skip to content</a>
@@ -111,32 +107,19 @@ const say: Record<string, string> = {
         </div>
         <p class="fine">macOS 26 or later · Not affiliated with, endorsed by or supported by Dell</p>
       </div>
-
-      <div class="proof">
-        <ul class="band" aria-label="Key measurements: this app against Dell's">
-          {tiles.map((t) => (
-            <li>
-              <span class="b-k">{t.label}</span>
-              <strong>{nb(t.ours)}</strong>
-              <span class="b-win">{say[t.label] ?? t.pill}</span>
-              <small>Dell's app: {nb(t.theirs)}</small>
-            </li>
-          ))}
-        </ul>
-        <p class="fine">Measured on one M4 Pro Mac with a Dell U2723QE and a U2424HE. <a href="#numbers">Method, and what was not measured</a>.</p>
-      </div>
     </section>
 
-    <section id="numbers" class="sec" aria-labelledby="h-numbers">
-      <Side id="numbers" eyebrow="By the numbers" title={`${facts.size.ratio}, and quiet between adjustments.`} lede="Smaller on disk, lighter in memory, silent when idle, and it asks for nothing. Measured on one M4 Pro Mac with a Dell U2723QE and a U2424HE, against Dell's Display and Peripheral Manager 2.3." />
-      <div class="body">
-        <Versus names={perms} />
-
-        <details class="raw">
-          <summary>How it was measured, and every other number<span class="pm" aria-hidden="true"></span></summary>
-          <div class="raw-body"><Numbers.Content /></div>
-        </details>
+    <section id="numbers" class="sec num" aria-labelledby="h-numbers">
+      <div class="num-head">
+        <p class="eyebrow">By the numbers</p>
+        <h2 id="h-numbers">Smaller, quieter, and it asks for nothing.</h2>
+        <p class="num-sub">Measured against Dell's Display and Peripheral Manager 2.3, on one M4 Pro Mac with a Dell U2723QE and a U2424HE.</p>
       </div>
+      <Versus names={perms} />
+      <details class="raw">
+        <summary>How it was measured, and every other number<span class="pm" aria-hidden="true"></span></summary>
+        <div class="raw-body"><Numbers.Content /></div>
+      </details>
     </section>
 
     <section id="more" class="sec" aria-labelledby="h-more">

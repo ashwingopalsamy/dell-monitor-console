@@ -1,59 +1,44 @@
 ---
-// The case, short: one big comparison (size, drawn to scale), then five plain rows. Bright is this app, dim is
-// Dell's. No captions, no tags; the exact method and every other measurement sit in the fold below.
-import { facts, US_NAME, THEM_NAME, nb } from "../lib";
-interface Props {
-  names: string[];
-}
-const { names } = Astro.props;
+// The case as one picture. For each measure a line runs from zero to Dell's figure; Dell's app is the grey dot at its
+// end, this app is the bright dot where its figure falls on the same line. The shorter the walk from the left, the
+// better, and the gap is the saving. Plain numbers sit on the dots; the words on the right say it in two or three.
+import { facts } from "../lib";
 const f = facts as any;
-
-// How much of the track Dell's bar fills is 1; ours is its true share, never less than a visible dot.
-const share = f.size.oursRange[0] / f.size.theirsRange[0];
-const every = /every (\d+) s/.exec(f.polls.theirs)?.[1];
-
 const mid = (r: number[]) => (r[0] + r[1]) / 2;
-const lessMemory = mid(f.memory.theirsRange) / mid(f.memory.oursRange);
-const rows: { label: string; us: string; win: string; them: string; sub?: string }[] = [
-  { label: "Memory, idle", us: f.memory.ours, win: `about ${Math.round(lessMemory * 10) / 10}× less`, them: f.memory.theirs },
-  { label: "CPU, idle", us: f.cpu.ours, win: "nothing while idle", them: f.cpu.theirs },
-  { label: "Polls your monitors", us: "Never", win: "silent between adjustments", them: every ? `Every ${every} s` : "Constantly" },
-  { label: "Privacy permissions", us: "None", win: `${names.length} fewer`, them: String(names.length), sub: names.join(", ") },
-  { label: "Network", us: "None", win: "no network code at all", them: "dell.com", sub: "URLs built in, with a Live Update channel" },
-];
----
-<div class="vs">
-  <div class="vs-hero">
-    <p class="vs-k">Installed size</p>
-    <p class="vs-big">{f.size.ratio}</p>
-    <div class="vs-lines">
-      <div class="vs-line us">
-        <span class="who">{US_NAME}</span>
-        <span class="track" aria-hidden="true"><i style={`--w:${share.toFixed(5)}`}></i></span>
-        <b>{nb(f.size.ours)}</b>
-      </div>
-      <div class="vs-line them">
-        <span class="who">{THEM_NAME}</span>
-        <span class="track" aria-hidden="true"><i style="--w:1"></i></span>
-        <b>{nb(f.size.theirs)}</b>
-      </div>
-    </div>
-    <p class="vs-note">{f.files.ours} files, against {f.files.theirs}.</p>
-  </div>
+const x = (k: string) => Math.min(1, mid(f[k].oursRange) / mid(f[k].theirsRange));
+const times = (n: number) => `${n >= 10 ? Math.round(n) : Math.round(n * 10) / 10}×`;
+const wakeLo = Math.round(f.wakeups.theirsRange[0] / mid(f.wakeups.oursRange));
+const wakeHi = Math.round(f.wakeups.theirsRange[1] / mid(f.wakeups.oursRange));
 
-  <table class="vs-table">
-    <caption class="sr">This app against Dell's app, measured on one Mac.</caption>
-    <thead>
-      <tr><th scope="col"><span class="sr">Measure</span></th><th scope="col">This app</th><th scope="col">Dell's app</th></tr>
-    </thead>
-    <tbody>
-      {rows.map((r) => (
-        <tr>
-          <th scope="row">{r.label}</th>
-          <td class="us" data-label="This app">{nb(r.us)}<span class="gain">{r.win}</span></td>
-          <td class="them" data-label="Dell's app">{nb(r.them)}{r.sub && <span class="sub">{r.sub}</span>}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
+const rows = [
+  { label: "Installed size", us: f.size.ours, them: f.size.theirs, x: x("size"), says: f.size.ratio },
+  { label: "Memory, idle", us: f.memory.ours, them: f.memory.theirs, x: x("memory"), says: `${times(mid(f.memory.theirsRange) / mid(f.memory.oursRange))} less` },
+  { label: "CPU, idle", us: f.cpu.ours, them: f.cpu.theirs, x: 0, says: "None" },
+  { label: "Wakeups a minute, idle", us: f.wakeups.ours, them: f.wakeups.theirs, x: x("wakeups"), says: `${wakeLo}–${wakeHi}× fewer` },
+  { label: "Privacy permissions", us: "0", them: String(f.permissions.theirs.length), x: 0, says: `${f.permissions.theirs.length} fewer` },
+];
+// A label sits centred over its dot, unless the dot is near an end, where it hangs inward so it never leaves the line.
+const edge = (v: number) => (v < 0.14 ? "start" : v > 0.86 ? "end" : "mid");
+---
+<div class="pl">
+  <p class="pl-key" aria-hidden="true">
+    <span><i class="us"></i>Dell Monitor Console</span>
+    <span><i class="them"></i>Dell's app</span>
+    <em>Closer to zero is better</em>
+  </p>
+  <ul class="pl-list">
+    {rows.map((r) => (
+      <li class="pl-row">
+        <span class="pl-k">{r.label}</span>
+        <div class="pl-plot" style={`--x:${r.x.toFixed(4)}`} role="img" aria-label={`${r.label}: this app ${r.us}, Dell's app ${r.them}`}>
+          <span class="pl-axis"></span>
+          <span class="pl-gap"></span>
+          <i class="pl-dot us" data-edge={edge(r.x)}><b>{r.us}</b></i>
+          <i class="pl-dot them" data-edge="end"><b>{r.them}</b></i>
+        </div>
+        <span class="pl-says">{r.says}</span>
+      </li>
+    ))}
+  </ul>
+  <p class="pl-foot">No network code. Nothing runs between adjustments. Dell's app has its own update channel built in.</p>
 </div>
