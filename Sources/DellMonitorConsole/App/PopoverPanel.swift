@@ -57,6 +57,7 @@ private final class PopoverHostingView: NSHostingView<AnyView> {
 @MainActor
 final class PopoverWindow {
     private let store: BrightnessStore
+    private let navigator = PopoverNavigator()
     private let panel = PopoverPanel(contentRect: .zero)
     private let container = NSView()
     private lazy var hostingView = makeHostingView()
@@ -78,6 +79,12 @@ final class PopoverWindow {
         hostingView.autoresizingMask = [.width, .height]
         container.addSubview(hostingView)
         panel.contentView = container
+    }
+
+    /// Opens the popover on a given screen: `--show settings`, `--show faq`, `--show about`.
+    func show(below button: NSStatusBarButton, screen: PopoverNavigator.Screen) {
+        navigator.screen = screen
+        show(below: button)
     }
 
     func show(below button: NSStatusBarButton) {
@@ -118,6 +125,8 @@ final class PopoverWindow {
             try? await Task.sleep(for: .seconds(PopoverStyle.duration))
             guard let self, !self.isShown else { return }
             self.panel.orderOut(nil)
+            // Always reopen on the displays.
+            self.navigator.screen = .home
             // The isActive guard leaves alone an outside click that has already activated another app.
             if restoringFocus, NSApp.isActive { NSApp.deactivate() }
         }
@@ -131,6 +140,7 @@ final class PopoverWindow {
                     onHeightChange: { [weak self] height in self?.surfaceHeightChanged(to: height) }
                 )
                 .environment(store)
+                .environment(navigator)
             )
         )
         view.sizingOptions = [.intrinsicContentSize]

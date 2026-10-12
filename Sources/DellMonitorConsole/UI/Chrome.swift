@@ -88,39 +88,58 @@ struct Well<Glyph: View>: View {
     }
 }
 
-/// Capsule slider: 5pt track, 20×15 capsule knob, neutral fill (no hue).
-struct CapsuleSlider: View {
+/// The system slider's look: a fill in the accent colour, a white capsule knob and a sun at each end, as in Control
+/// Center. A real backlight uses the accent; a software dim is drawn in neutral grey, so the two cannot be mistaken.
+struct BrightnessSlider: View {
     @Binding var value: Double
     var range: ClosedRange<Double>
-    var width: CGFloat
-    var label = ""
-    @Environment(\.colorScheme) private var scheme
+    var backlight: Bool
+    var label: String
 
-    private static let knobW: CGFloat = 20
-    private static let knobH: CGFloat = 15
+    private static let knobWidth: CGFloat = 26
+    private static let knobHeight: CGFloat = 18
+    private static let trackHeight: CGFloat = 8
+    /// VoiceOver steps in tens.
     private static let accessibleStep: Double = 10
 
     var body: some View {
-        let fraction = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
-        let cx = Self.knobW / 2 + CGFloat(fraction) * (width - Self.knobW)
-        ZStack(alignment: .leading) {
-            Capsule().fill(Palette.trackFill).frame(width: width, height: 5)
-            Capsule().fill(Palette.secondary).frame(width: cx, height: 5)
-            Capsule()
-                .fill(scheme == .dark ? Color(white: 0.88) : Color.white)
-                .frame(width: Self.knobW, height: Self.knobH)
-                .shadow(color: .black.opacity(0.25), radius: 1.5, x: 0, y: 0.5)
-                .offset(x: cx - Self.knobW / 2)
-        }
-        .frame(width: width, height: Metric.hitTarget)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 0).onChanged { drag in
-                let f = min(1, max(0, (drag.location.x - Self.knobW / 2) / (width - Self.knobW)))
-                value = (range.lowerBound + Double(f) * (range.upperBound - range.lowerBound)).rounded()
+        HStack(spacing: 10) {
+            Image(systemName: "sun.min.fill")
+                .font(.system(size: 11))
+                .foregroundStyle(Palette.tertiary)
+                .accessibilityHidden(true)
+            GeometryReader { proxy in
+                let span = max(range.upperBound - range.lowerBound, 1)
+                let fraction = (value - range.lowerBound) / span
+                let travel = max(proxy.size.width - Self.knobWidth, 1)
+                let x = Self.knobWidth / 2 + CGFloat(fraction) * travel
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Palette.trackFill).frame(height: Self.trackHeight)
+                    Capsule()
+                        .fill(backlight ? Color.accentColor : Color.primary.opacity(0.4))
+                        .frame(width: x, height: Self.trackHeight)
+                    Capsule()
+                        .fill(.white)
+                        .frame(width: Self.knobWidth, height: Self.knobHeight)
+                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .offset(x: x - Self.knobWidth / 2)
+                }
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0).onChanged { drag in
+                        let f = min(1, max(0, (drag.location.x - Self.knobWidth / 2) / travel))
+                        value = (range.lowerBound + Double(f) * span).rounded()
+                    }
+                )
             }
-        )
-        .accessibilityElement()
+            .frame(height: Metric.hitTarget)
+            Image(systemName: "sun.max.fill")
+                .font(.system(size: 13))
+                .foregroundStyle(Palette.tertiary)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
         .accessibilityValue("\(Int(value)) percent")
         .accessibilityAdjustableAction { direction in
@@ -130,6 +149,29 @@ struct CapsuleSlider: View {
             @unknown default: break
             }
         }
+    }
+}
+
+/// A round 28pt button with a symbol: refresh, settings, quit. The label is the tooltip and the VoiceOver name.
+struct IconButton: View {
+    let symbol: String
+    let label: String
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(hovering ? Palette.label : Palette.secondary)
+                .frame(width: Metric.hitTarget, height: Metric.hitTarget)
+                .background(Circle().fill(hovering ? Palette.hoverStrong : Palette.wellFill))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .help(label)
+        .accessibilityLabel(label)
     }
 }
 

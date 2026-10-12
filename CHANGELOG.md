@@ -4,6 +4,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions: [Sem
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-12
+
+### Changed
+- The popover follows Control Center: each display is a section with its name, how it is controlled, the level, and a
+  slider with the system accent colour and a sun at each end.
+- Refresh, settings and quit are round buttons in the header. Open at login, FAQ and About moved to a settings screen
+  inside the popover.
+
+### Added
+- FAQ and About screens in the popover, and `--show settings|faq|about` to open one.
+
 ## [1.0.0] - 2026-10-12
 
 ### Added

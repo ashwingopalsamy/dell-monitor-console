@@ -48,10 +48,10 @@ final class StatusItemController: NSObject {
         trackSnapshots()
     }
 
-    /// Opens the popover without a click, for `--show` at launch.
-    func showPopover() {
+    /// Opens the popover without a click, for `--show [settings|faq|about]` at launch.
+    func showPopover(screen: PopoverNavigator.Screen = .home) {
         guard let button = statusItem.button, !popover.isShown else { return }
-        popover.show(below: button)
+        popover.show(below: button, screen: screen)
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {

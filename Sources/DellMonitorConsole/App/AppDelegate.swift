@@ -17,7 +17,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // The status item needs a run-loop turn to get its window before the popover can anchor to it.
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(400))
-                statusItem.showPopover()
+                let names: [String: PopoverNavigator.Screen] = ["settings": .settings, "faq": .faq, "about": .about]
+                let arguments = CommandLine.arguments
+                let after = arguments.firstIndex(of: "--show").flatMap { arguments.indices.contains($0 + 1) ? arguments[$0 + 1] : nil }
+                statusItem.showPopover(screen: after.flatMap { names[$0] } ?? .home)
             }
         }
     }

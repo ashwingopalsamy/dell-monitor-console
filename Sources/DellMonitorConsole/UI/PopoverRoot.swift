@@ -1,84 +1,75 @@
 import SwiftUI
 
 struct PopoverRoot: View {
-    @Environment(BrightnessStore.self) private var store
-    @State private var launchAtLogin = LaunchAtLogin.isEnabled
+    @Environment(PopoverNavigator.self) private var navigator
     let onQuit: () -> Void
     let onHeightChange: (CGFloat) -> Void
 
     var body: some View {
         GlassPopover {
-            VStack(spacing: 0) {
-                header
-                if store.rows.isEmpty {
-                    Text("No displays found")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Palette.secondary)
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                } else {
-                    Card {
-                        ForEach(Array(store.rows.enumerated()), id: \.element.id) { index, row in
-                            if index > 0 {
-                                Hairline().padding(.horizontal, Metric.side)
-                            }
-                            DisplayRow(row: row)
-                        }
-                    }
+            ZStack {
+                switch navigator.screen {
+                case .home: HomeScreen(onQuit: onQuit)
+                case .settings: SettingsScreen()
+                case .faq: FaqScreen()
+                case .about: AboutScreen()
                 }
-                footer
             }
-            .padding(.bottom, Metric.groupInset)
+            .transition(.opacity)
+            .id(navigator.screen)
+            .animation(Motion.push, value: navigator.screen)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { onHeightChange($0) }
         }
     }
+}
 
-    private var header: some View {
-        HStack {
-            Text("Displays")
+/// The title line of a screen: a title, and the round buttons that belong to it.
+struct ScreenHeader<Trailing: View>: View {
+    let title: String
+    var back: (() -> Void)?
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let back {
+                IconButton(symbol: "chevron.left", label: "Back", action: back)
+            }
+            Text(title)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Palette.label)
-            Spacer()
-            Button {
-                store.refresh()
-            } label: {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Palette.secondary)
-                    .frame(width: Metric.well, height: Metric.well)
-                    .background(Circle().fill(Palette.wellFill))
-            }
-            .buttonStyle(.plain)
-            .help("Check displays again")
-            .accessibilityLabel("Check displays again")
+            Spacer(minLength: 8)
+            trailing
         }
         .padding(.horizontal, Metric.side)
         .frame(height: Metric.header)
     }
+}
 
-    private var footer: some View {
-        HStack {
-            Toggle(isOn: $launchAtLogin) {
-                Text("Open at login")
+/// The displays, one section each. Refresh, settings and quit sit in the header, where Control Center keeps its own.
+struct HomeScreen: View {
+    @Environment(BrightnessStore.self) private var store
+    @Environment(PopoverNavigator.self) private var navigator
+    let onQuit: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScreenHeader(title: "Displays") {
+                IconButton(symbol: "arrow.clockwise", label: "Check displays again") { store.refresh() }
+                IconButton(symbol: "gearshape", label: "Settings") { navigator.screen = .settings }
+                IconButton(symbol: "power", label: "Quit", action: onQuit)
+            }
+            if store.rows.isEmpty {
+                Text("No displays found")
                     .font(.system(size: 12))
                     .foregroundStyle(Palette.secondary)
-            }
-            .toggleStyle(.switch)
-            .controlSize(.mini)
-            .onChange(of: launchAtLogin) { _, wanted in
-                do {
-                    try LaunchAtLogin.setEnabled(wanted)
-                } catch {
-                    launchAtLogin = LaunchAtLogin.isEnabled
+                    .frame(maxWidth: .infinity, minHeight: 72)
+            } else {
+                ForEach(Array(store.rows.enumerated()), id: \.element.id) { index, row in
+                    Hairline().padding(.horizontal, Metric.side)
+                    DisplayRow(row: row)
                 }
             }
-            Spacer()
-            Button("Quit", action: onQuit)
-                .buttonStyle(.plain)
-                .font(.system(size: 12))
-                .foregroundStyle(Palette.secondary)
-                .keyboardShortcut("q")
+            Color.clear.frame(height: Metric.groupInset)
         }
-        .padding(.horizontal, Metric.side)
-        .frame(height: Metric.header)
     }
 }

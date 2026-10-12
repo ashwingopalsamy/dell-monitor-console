@@ -39,6 +39,7 @@ enum Metric {
 enum Motion {
     static let hover = Animation.easeOut(duration: 0.12)
     static let numeric = Animation.snappy(duration: 0.25)
+    static let push = Animation.easeInOut(duration: 0.24)
     static let reduced = Animation.easeOut(duration: 0.12)
 
     static func pick(_ animation: Animation, _ reduceMotion: Bool) -> Animation {
