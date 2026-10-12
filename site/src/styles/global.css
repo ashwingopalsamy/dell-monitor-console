@@ -100,13 +100,16 @@ h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
 .fine a { color: var(--t3); text-decoration: underline; text-decoration-color: var(--b3); text-underline-offset: 3px; }
 .fine a:hover { color: var(--t1); }
 
-/* The key figures under the hero: four numbers, set as type, with a rule above and between. No boxes. */
+/* The key figures under the hero, one column each: what it is, our number, what it means, then Dell's. A rule above and
+   between the columns, no boxes. */
 .band { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--b1); }
-.band li { margin: 0; padding: 28px 24px 0 0; }
-.band li + li { padding-left: 24px; border-left: 1px solid var(--b1); }
-.band strong { display: block; font-size: clamp(34px, 3.7vw, 54px); line-height: 1; font-weight: 600; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--t1); }
-.band span { display: block; margin-top: 12px; font-size: 14.5px; line-height: 1.4; color: var(--t2); }
-.band small { display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.4; color: var(--t4); font-variant-numeric: tabular-nums; }
+.band li { margin: 0; padding: 28px 28px 4px 0; display: flex; flex-direction: column; }
+.band li + li { padding-left: 28px; border-left: 1px solid var(--b1); }
+.b-k { font: 500 11.5px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--t4); }
+.band strong { margin-top: 16px; font-size: clamp(36px, 3.9vw, 58px); line-height: 1; font-weight: 600; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--t1); }
+.b-win { margin-top: 16px; font-size: 16px; line-height: 1.35; font-weight: 550; letter-spacing: -0.01em; color: var(--t1); }
+.band small { margin-top: 5px; font-size: 14px; line-height: 1.4; color: var(--t4); font-variant-numeric: tabular-nums; }
+.proof .fine { margin-top: 32px; }
 
 /* the console: a monitor, the app's popover in front of it, one number between them */
 .stage { user-select: none; -webkit-user-select: none; }
@@ -215,8 +218,8 @@ h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
 
 /* The case: one big comparison, then five plain rows. Bright is this app, dim is Dell's; the words say the rest. */
 .vs-hero { padding: 4px 0 40px; }
-.vs-k { margin: 0; font: 500 11.5px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--t4); }
-.vs-big { margin: 10px 0 30px; font-size: clamp(48px, 6vw, 84px); line-height: 1; font-weight: 600; letter-spacing: -0.055em; color: var(--t1); }
+.vs .vs-k { margin: 0; font: 500 11.5px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--t4); }
+.vs .vs-big { margin: 10px 0 30px; font-size: clamp(48px, 6vw, 84px); line-height: 1; font-weight: 600; letter-spacing: -0.055em; color: var(--t1); }
 .vs-lines { display: grid; gap: 16px; }
 .vs-line { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr) auto; align-items: center; gap: 18px; }
 .vs-line .who { font-size: 14.5px; color: var(--t4); }
@@ -226,7 +229,7 @@ h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
 .vs-line.them .track i { background: var(--them); }
 .vs-line b { min-width: 7.5em; text-align: right; font-size: 17px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--t1); }
 .vs-line.them b { color: var(--t3); font-weight: 500; }
-.vs-note { margin: 18px 0 0; font-size: 14px; color: var(--t4); }
+.vs .vs-note { margin: 18px 0 0; font-size: 14px; color: var(--t4); }
 
 .vs-table { width: 100%; border-collapse: collapse; }
 .vs-table thead th { padding: 0 20px 12px 0; text-align: left; font: 500 11.5px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--t4); }
@@ -347,7 +350,9 @@ details[open] > summary .pm::before, details[open] > summary .pm::after { backgr
   .fine { margin-top: 16px; }
   .proof { margin-top: 36px; }
   .band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .band li { padding: 20px 14px 18px 0; border-bottom: 1px solid var(--b1); }
+  .band li { padding: 20px 14px 20px 0; border-bottom: 1px solid var(--b1); }
+  .band strong { margin-top: 12px; }
+  .b-win { margin-top: 12px; font-size: 15px; }
   .band li + li { padding-left: 0; border-left: 0; }
   .band li:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--b1); }
   .band strong { font-size: 32px; }
@@ -381,7 +386,7 @@ details[open] > summary .pm::before, details[open] > summary .pm::after { backgr
 }
 
 @media (max-width: 640px) {
-  .vs-big { margin-bottom: 22px; }
+  .vs .vs-big { margin-bottom: 22px; }
   .vs-line { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
   .vs-line .track { grid-column: 1 / -1; order: 3; }
   .vs-line b { min-width: 0; }
