@@ -298,7 +298,7 @@ knowledge.install = release
     }
   : { source, cli };
 knowledge.privacy = {
-  network: "none: no URL and no socket in the sources, enforced by scripts/check-no-network.sh",
+  network: "none: no network API and no socket in the sources, enforced by scripts/check-no-network.sh; three About links open in your browser",
   permissions: "none: no usage descriptions, no entitlements",
   telemetry: false,
   analytics: false,

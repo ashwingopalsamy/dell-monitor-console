@@ -11,28 +11,29 @@ interface Props {
 }
 const { name, level, kind = "display", glyph, live = false } = Astro.props;
 const label = { half: "Software dimming", question: "Level not confirmed", warning: "Change not accepted" };
+const subtitle = glyph === "half" ? "Software dimming" : glyph === "question" ? "Set, not confirmed" : glyph === "warning" ? "Did not accept the change" : kind === "laptop" ? "Backlight, through macOS" : "Backlight, over DDC/CI";
 const symbol = {
   display: ["M3.5 5.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5h-10a1.5 1.5 0 0 1-1.5-1.5z", "M7.5 16.5h5"],
   laptop: ["M5 5.5A1.5 1.5 0 0 1 6.5 4h7A1.5 1.5 0 0 1 15 5.5V12H5z", "M2.5 14.5h15"],
 };
 ---
-<div class="row">
+<div class:list={["row", { soft: glyph === "half" }]}>
   <div class="rowtop">
     <span class="well" aria-hidden="true">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{symbol[kind].map((d) => <path d={d} />)}</svg>
     </span>
-    <span class="nm">{name}</span>
-    {glyph && (
-      <svg class:list={["gl", glyph]} viewBox="0 0 16 16" role="img" aria-label={label[glyph]}>
-        {glyph === "half" && (<><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.4" /><path d="M8 1.75a6.25 6.25 0 0 0 0 12.5z" fill="currentColor" /></>)}
-        {glyph === "question" && (<><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.4" /><path d="M6.2 6.3a1.9 1.9 0 1 1 2.7 1.7c-.6.3-.9.7-.9 1.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /><circle cx="8" cy="11.5" r=".85" fill="currentColor" /></>)}
-        {glyph === "warning" && (<><path d="M8 1.6a1.2 1.2 0 0 1 1.04.6l5.2 9.1a1.2 1.2 0 0 1-1.04 1.8H2.8a1.2 1.2 0 0 1-1.04-1.8l5.2-9.1A1.2 1.2 0 0 1 8 1.6z" fill="currentColor" /><path d="M8 5.6v3.2" stroke="#1a1204" stroke-width="1.5" stroke-linecap="round" /><circle cx="8" cy="10.9" r=".9" fill="#1a1204" /></>)}
-      </svg>
-    )}
+    <span class="who2">
+      <span class="nm">{name}</span>
+      <span class:list={["sub", { warn: glyph === "warning" }]}>{subtitle}</span>
+    </span>
     {live ? <output class="pct" data-pct aria-live="off">{level}%</output> : <span class="pct">{level}%</span>}
   </div>
-  <!-- Without script this is a picture. The script makes it a slider: role, name, value and keys. -->
-  <div class:list={["cap", { live }]} style={`--p:${level / 100}`} aria-hidden="true" {...(live ? { "data-slider": "", "data-label": `Brightness of ${name}` } : {})}>
-    <i class="fill"></i><i class="knob"></i>
+  <div class="slide">
+    <svg class="sun lo" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="2.6" /><g stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M8 1.6v1.5M8 12.9v1.5M1.6 8h1.5M12.9 8h1.5M3.5 3.5l1 1M11.5 11.5l1 1M3.5 12.5l1-1M11.5 4.5l1-1" /></g></svg>
+    <!-- Without script this is a picture. The script makes it a slider: role, name, value and keys. -->
+    <div class:list={["cap", { live }]} style={`--p:${level / 100}`} aria-hidden="true" {...(live ? { "data-slider": "", "data-label": `Brightness of ${name}` } : {})}>
+      <i class="fill"></i><i class="knob"></i>
+    </div>
+    <svg class="sun hi" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="3.4" /><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 .8v1.8M8 13.4v1.8M.8 8h1.8M13.4 8h1.8M2.9 2.9l1.3 1.3M11.8 11.8l1.3 1.3M2.9 13.1l1.3-1.3M11.8 4.2l1.3-1.3" /></g></svg>
   </div>
 </div>
