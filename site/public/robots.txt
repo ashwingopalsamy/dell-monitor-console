@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://apps.ashwingopalsamy.in/dell-monitor-console/sitemap.xml

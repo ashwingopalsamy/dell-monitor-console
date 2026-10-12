@@ -1,0 +1,6 @@
+{
+  "slug": "dell-monitor-console",
+  "binding": "DELL_MONITOR_CONSOLE",
+  "name": "Dell Monitor Console",
+  "description": "A lite macOS menu bar app for the brightness of your Dell and other DDC/CI displays."
+}

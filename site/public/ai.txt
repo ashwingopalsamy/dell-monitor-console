@@ -1,0 +1,15 @@
+# Dell Monitor Console: how automated readers may use this site
+# https://apps.ashwingopalsamy.in/dell-monitor-console/
+
+Search engines, answer engines and agents may read, quote and cite these pages.
+Please link to the page you used.
+
+Licence: none has been chosen yet for the code or the text.
+Names:   Dell and its product names belong to their owners. They are used here only to say what the app works with.
+
+Machine-readable:
+  /dell-monitor-console/llms.txt
+  /dell-monitor-console/llms-full.txt
+  /dell-monitor-console/knowledge.json
+  /dell-monitor-console/mcp          (read-only MCP over streamable HTTP)
+  Accept: text/markdown on any page returns Markdown.

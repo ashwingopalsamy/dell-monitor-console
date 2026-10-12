@@ -1,0 +1,16 @@
+{
+  "name": "Dell Monitor Console",
+  "short_name": "Monitor Console",
+  "description": "A macOS menu bar app for the brightness of your displays.",
+  "id": "/dell-monitor-console/",
+  "start_url": "/dell-monitor-console/",
+  "scope": "/dell-monitor-console/",
+  "display": "standalone",
+  "background_color": "#0d0e10",
+  "theme_color": "#0d0e10",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

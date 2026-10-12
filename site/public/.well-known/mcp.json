@@ -1,0 +1,11 @@
+{
+  "name": "dell-monitor-console-docs",
+  "title": "Dell Monitor Console docs",
+  "description": "Read-only tools over the Dell Monitor Console documentation: what it is, the measurements, how it controls a display, install steps, the FAQ and the privacy facts.",
+  "version": "1.0.0",
+  "transport": { "type": "streamable-http", "url": "https://apps.ashwingopalsamy.in/dell-monitor-console/mcp" },
+  "authentication": "none",
+  "readOnly": true,
+  "tools": ["overview", "metrics", "how_it_works", "install", "faq", "privacy"],
+  "documentation": "https://apps.ashwingopalsamy.in/dell-monitor-console/llms.txt"
+}

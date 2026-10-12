@@ -1,0 +1,59 @@
+---
+// The case, short: one big comparison (size, drawn to scale), then five plain rows. Bright is this app, dim is
+// Dell's. No captions, no tags; the exact method and every other measurement sit in the fold below.
+import { facts, US_NAME, THEM_NAME, nb } from "../lib";
+interface Props {
+  names: string[];
+}
+const { names } = Astro.props;
+const f = facts as any;
+
+// How much of the track Dell's bar fills is 1; ours is its true share, never less than a visible dot.
+const share = f.size.oursRange[0] / f.size.theirsRange[0];
+const every = /every (\d+) s/.exec(f.polls.theirs)?.[1];
+
+const mid = (r: number[]) => (r[0] + r[1]) / 2;
+const lessMemory = mid(f.memory.theirsRange) / mid(f.memory.oursRange);
+const rows: { label: string; us: string; win: string; them: string; sub?: string }[] = [
+  { label: "Memory, idle", us: f.memory.ours, win: `about ${Math.round(lessMemory * 10) / 10}× less`, them: f.memory.theirs },
+  { label: "CPU, idle", us: f.cpu.ours, win: "nothing while idle", them: f.cpu.theirs },
+  { label: "Polls your monitors", us: "Never", win: "silent between adjustments", them: every ? `Every ${every} s` : "Constantly" },
+  { label: "Privacy permissions", us: "None", win: `${names.length} fewer`, them: String(names.length), sub: names.join(", ") },
+  { label: "Network", us: "None", win: "no network code at all", them: "dell.com", sub: "URLs built in, with a Live Update channel" },
+];
+---
+<div class="vs">
+  <div class="vs-hero">
+    <p class="vs-k">Installed size</p>
+    <p class="vs-big">{f.size.ratio}</p>
+    <div class="vs-lines">
+      <div class="vs-line us">
+        <span class="who">{US_NAME}</span>
+        <span class="track" aria-hidden="true"><i style={`--w:${share.toFixed(5)}`}></i></span>
+        <b>{nb(f.size.ours)}</b>
+      </div>
+      <div class="vs-line them">
+        <span class="who">{THEM_NAME}</span>
+        <span class="track" aria-hidden="true"><i style="--w:1"></i></span>
+        <b>{nb(f.size.theirs)}</b>
+      </div>
+    </div>
+    <p class="vs-note">{f.files.ours} files, against {f.files.theirs}.</p>
+  </div>
+
+  <table class="vs-table">
+    <caption class="sr">This app against Dell's app, measured on one Mac.</caption>
+    <thead>
+      <tr><th scope="col"><span class="sr">Measure</span></th><th scope="col">This app</th><th scope="col">Dell's app</th></tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <th scope="row">{r.label}</th>
+          <td class="us" data-label="This app">{nb(r.us)}<span class="gain">{r.win}</span></td>
+          <td class="them" data-label="Dell's app">{nb(r.them)}{r.sub && <span class="sub">{r.sub}</span>}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

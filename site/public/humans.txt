@@ -1,0 +1,3 @@
+Dell Monitor Console
+Made by Ashwin Gopalsamy, https://ashwingopalsamy.in
+Built with Astro. Type: Geist and Geist Mono.

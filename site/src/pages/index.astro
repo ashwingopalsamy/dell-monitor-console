@@ -1,0 +1,219 @@
+---
+import Base from "../layouts/Base.astro";
+import Dial from "../components/Dial.astro";
+import Row from "../components/Row.astro";
+import Side from "../components/Side.astro";
+import Versus from "../components/Versus.astro";
+import { BASE, REPO, NAME, nb, US_NAME, THEM_NAME, facts, wins, losses, tiles, compare, faq, install, lede, pageDescription, description, release, faqPage, howToInstall, webSite, softwareApplication, sourceCode } from "../lib";
+import * as Numbers from "../content-md/numbers.md";
+import * as More from "../content-md/more.md";
+import * as Control from "../content-md/control.md";
+import * as Twice from "../content-md/twice.md";
+import * as Privacy from "../content-md/privacy.md";
+import * as Install from "../content-md/install.md";
+
+const nodes = [webSite(), softwareApplication(), sourceCode(), howToInstall(), faqPage()];
+const build = install.source.join("\n");
+const github = "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z";
+const nav: { id: string; label: string; icon: string[] }[] = [
+  { id: "numbers", label: "Numbers", icon: ["M5 20v-7", "M12 20V5", "M19 20v-10"] },
+  { id: "control", label: "Control", icon: ["M4 7h9", "M17 7h3", "M4 17h3", "M11 17h9", "M15 7m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0", "M9 17m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0"] },
+  { id: "twice", label: "Why twice", icon: ["M6.5 6.5 12 12l-5.5 5.5", "M13 6.5 18.5 12 13 17.5"] },
+  { id: "privacy", label: "Privacy", icon: ["M12 3.5 19 6.5v5c0 4.3-2.9 7.6-7 9.5-4.1-1.9-7-5.2-7-9.5v-5z"] },
+  { id: "install", label: "Install", icon: ["M12 4v11", "M7.5 10.5 12 15l4.5-4.5", "M5 19.5h14"] },
+  { id: "faq", label: "FAQ", icon: ["M9.6 9.6a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1.1.9-1.1 1.7", "M12 17h.01", "M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0"] },
+];
+
+const perms = facts.permissions.theirs;
+---
+<Base home title={NAME} description={description} nodes={nodes}>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <a class="rb logo" href="#top" aria-label={`${NAME}, top`}><Dial level={0} id="logo" class="mini" /></a>
+    <nav class="island" aria-label="Sections">
+      <span class="hv" aria-hidden="true"></span>
+      <span class="hl" aria-hidden="true"></span>
+      {nav.map((n) => (
+        <a href={`#${n.id}`} data-s={n.id} aria-label={n.label}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{n.icon.map((d) => <path d={d} />)}</svg>
+          <span>{n.label}</span>
+        </a>
+      ))}
+    </nav>
+    <span class="sep" aria-hidden="true"></span>
+    <a class="rb gh" href={REPO} rel="noopener" aria-label={`${NAME} on GitHub`}><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d={github} /></svg></a>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero" aria-labelledby="h-top">
+      <div class="copy">
+        <h1 id="h-top"><span class="hl1">Display brightness,</span> <span class="hl1 dim">and nothing else.</span></h1>
+        <p>A lite menu bar app for the one thing people open Dell's app for: one slider per display. No network, no permissions.</p>
+      </div>
+
+      <div class="stage" data-console style="--l:0.75">
+        <div class="rig">
+          <div class="bloom" aria-hidden="true"></div>
+          <div class="monitor" aria-hidden="true">
+            <div class="screen">
+              <div class="picture"><i class="win a"></i><i class="win b"></i><i class="mbar"></i></div>
+              <Dial level={75} id="hero" glow class="big" />
+            </div>
+          </div>
+          <div class="stand" aria-hidden="true"><i class="neck"></i><i class="foot"></i></div>
+          <div class="pop" role="group" aria-label="Replica of the app's popover">
+            <div class="pop-h" aria-hidden="true">
+              <span>Displays</span>
+              <span class="well"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 10a5.5 5.5 0 1 1-1.8-4.1" /><path d="M15.7 3.6v3.2h-3.2" /></svg></span>
+            </div>
+            <div class="card"><Row name="DELL U2723QE" level={75} live /></div>
+            <div class="pop-f" aria-hidden="true"><span class="sw"><i></i></span><span>Open at login</span><span class="quit">Quit</span></div>
+          </div>
+          <p class="hint" id="console-hint">Drag the slider or the dial. Arrow keys work.</p>
+        </div>
+      </div>
+
+      <div class="cta">
+        <div class="btns">
+          {release ? (
+            <>
+              <a class="btn solid dl" href={release.dmgUrl}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="da"><path d="M12 4v11" /><path d="M7.5 10.5 12 15l4.5-4.5" /></g><path d="M5 19.5h14" /></svg>
+                <span>Download for macOS</span>
+              </a>
+              <button class="btn copybtn brewbtn" type="button" data-copy={release.brew} title={release.brew} aria-label="Copy the Homebrew install command">
+                <svg class="mug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 9.5h9.5v8a3 3 0 0 1-3 3H8.5a3 3 0 0 1-3-3z" /><path d="M15 11.5h1.4a2.4 2.4 0 0 1 0 4.8H15" /><path d="M6 9.5a2.1 2.1 0 0 1 1.4-3.8 2.7 2.7 0 0 1 4.8-.6 2.2 2.2 0 0 1 3 1.8" /></svg>
+                <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                <span data-label>Homebrew</span>
+              </button>
+              <a class="btn" href="#install"><span class="long">Other ways to install</span><span class="short">More ways</span></a>
+            </>
+          ) : (
+            <>
+              <a class="btn solid dl" href="#install">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="da"><path d="M12 4v11" /><path d="M7.5 10.5 12 15l4.5-4.5" /></g><path d="M5 19.5h14" /></svg>
+                <span>Build from source</span>
+              </a>
+              <button class="btn copybtn" type="button" data-copy={build} aria-label="Copy the build commands">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5" /><path d="M15.5 8.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" /></svg>
+                <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                <span><span data-label>Copy</span><span class="long"> commands</span></span>
+              </button>
+              <a class="btn" href={REPO} rel="noopener"><span>Source</span></a>
+            </>
+          )}
+        </div>
+        <p class="fine">macOS 26 or later · Apple silicon · {release ? `Version ${release.version}` : "Not released yet"}<br />Not affiliated with, endorsed by or supported by Dell.</p>
+      </div>
+
+      <div class="proof">
+        <ul class="band" aria-label="Key measurements: this app against Dell's">
+          {tiles.map((t) => (
+            <li>
+              <strong>{nb(t.ours)}</strong>
+              <span>{t.label}</span>
+              <small>Dell's app: {nb(t.theirs)}</small>
+            </li>
+          ))}
+        </ul>
+        <p class="fine">Measured on one M4 Pro Mac with a Dell U2723QE and a U2424HE. <a href="#numbers">Method, and what was not measured</a>.</p>
+      </div>
+    </section>
+
+    <section id="numbers" class="sec" aria-labelledby="h-numbers">
+      <Side id="numbers" eyebrow="By the numbers" title={`${facts.size.ratio}, and quiet between adjustments.`} lede="Smaller on disk, lighter in memory, silent when idle, and it asks for nothing. Measured on one M4 Pro Mac with a Dell U2723QE and a U2424HE, against Dell's Display and Peripheral Manager 2.3." />
+      <div class="body">
+        <Versus names={perms} />
+
+        <details class="raw">
+          <summary>How it was measured, and every other number<span class="pm" aria-hidden="true"></span></summary>
+          <div class="raw-body"><Numbers.Content /></div>
+        </details>
+      </div>
+    </section>
+
+    <section id="more" class="sec" aria-labelledby="h-more">
+      <Side id="more" eyebrow="Where DDPM does more" title="A lite app, not a replacement." lede="It is for the one task most people open Dell's app for. Keep Dell's app for the rest." />
+      <div class="body more"><More.Content /></div>
+    </section>
+
+    <section id="control" class="sec" aria-labelledby="h-control">
+      <Side id="control" eyebrow="How it controls a display" title="Real backlight where a display answers. A dim where it does not." lede={lede.control} />
+      <div class="body">
+        <ul class="paths" aria-label="One row per display, as the popover draws them">
+          <li><div class="mini-card"><Row name="DELL U2723QE" level={60} /></div><span class="tag">Hardware</span></li>
+          <li><div class="mini-card"><Row name="Built-in display" level={85} kind="laptop" /></div><span class="tag">Built-in</span></li>
+          <li><div class="mini-card"><Row name="Monitor without DDC/CI" level={40} glyph="half" /></div><span class="tag">Software dim</span></li>
+          <li><div class="mini-card"><Row name="External display" level={55} glyph="question" /></div><span class="tag">Unconfirmed</span></li>
+          <li><div class="mini-card"><Row name="External display" level={55} glyph="warning" /></div><span class="tag">Rejected</span></li>
+        </ul>
+        <Control.Content />
+      </div>
+    </section>
+
+    <section id="twice" class="sec" aria-labelledby="h-twice">
+      <Side id="twice" eyebrow="Why twice" title="Some monitors miss the first command." lede={lede.twice} />
+      <div class="body">
+        <div class="seq" role="group" aria-label="One brightness write, in time">
+          <div class="axis" aria-hidden="true"><i style="--t:0"></i><i style="--t:0.2857"></i><i style="--t:1"></i></div>
+          <ol>
+            <li><b>0 ms</b><strong>Request</strong><span>A monitor that has sat idle swallows it.</span></li>
+            <li><b>40 ms</b><strong>The same request again</strong><span>Answered. Setting a level twice is harmless.</span></li>
+            <li><b>≈ 140 ms</b><strong>Reply read</strong><span>Checked, then trusted. After a write, the level is read back.</span></li>
+          </ol>
+        </div>
+        <Twice.Content />
+      </div>
+    </section>
+
+    <section id="privacy" class="sec" aria-labelledby="h-privacy">
+      <Side id="privacy" eyebrow="Privacy" title="No network. Check it yourself." lede={pageDescription("privacy")} />
+      <div class="body"><Privacy.Content /></div>
+    </section>
+
+    <section id="install" class="sec" aria-labelledby="h-install">
+      <Side
+        id="install"
+        eyebrow={release ? "Install" : "Install · not released yet"}
+        title={release ? "Three ways to install." : "Build it from source."}
+        lede={pageDescription("install")}
+      />
+      <div class="body"><Install.Content /></div>
+    </section>
+
+    <section id="faq" class="sec" aria-labelledby="h-faq">
+      <Side id="faq" eyebrow="FAQ" title="Straight answers." lede="Including where it falls short, and what has not been tested." />
+      <div class="body faq">
+        {faq.map((f, i) => (
+          <details id={`faq-${f.id}`} open={i === 0}>
+            <summary>{f.q}<span class="pm" aria-hidden="true"></span></summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <footer class="sign">
+    <div class="author">
+      <img class="face" src={`${BASE}brand/pfp.jpg`} alt="Portrait of Ashwin Gopalsamy" width="48" height="48" decoding="async" loading="lazy" />
+      <p>Built by <a href="https://ashwingopalsamy.in" rel="author">Ashwin Gopalsamy</a></p>
+    </div>
+    <p class="legal">Not affiliated with, endorsed by or supported by Dell. Dell and its product names belong to their owners and appear here only to say what the app works with.</p>
+    <div class="by">
+      <a href={REPO} rel="noopener">Source</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a href={`${BASE}llms.txt`}>llms.txt</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a href={`${BASE}index.md`}>Markdown</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <span>{new Date().getFullYear()}</span>
+    </div>
+  </footer>
+
+  <script>
+    import "../scripts/page";
+    import "../scripts/dial";
+  </script>
+</Base>
