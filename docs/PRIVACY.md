@@ -4,8 +4,9 @@ Dell Monitor Console talks to your displays over their cable and to nothing else
 
 ## What it does not have
 
-- **No network.** No URL and no socket anywhere in the sources. `scripts/check-no-network.sh` fails if a network API
-  or a URL literal appears under `Sources/`.
+- **No network.** No network API and no socket anywhere in the sources. `scripts/check-no-network.sh` fails if one
+  appears under `Sources/`. The only URL literals are the three links on the About screen, marked `// allow-url`;
+  the app hands them to your browser and opens no connection itself.
 - **No permissions.** It declares no privacy usage descriptions and no entitlements. Scrolling over its menu bar icon
   is received on its own status item, so there is no Accessibility request.
 - **No telemetry, no analytics, no crash reporting, no updater.**

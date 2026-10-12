@@ -76,7 +76,7 @@ your adjustments.
 |---|---|---|
 | Privacy permissions | **none** | Accessibility, Automation, Camera, Microphone, Downloads folder |
 | Entitlements | none | |
-| Network | **none**: no URL and no socket in the sources, gated by a script | 32 URL strings; `dell.com`, `clientperipherals.dell.com`, `downloads.dell.com` |
+| Network | **none**: no network API and no socket in the sources, gated by a script (three About links go to your browser) | 32 URL strings; `dell.com`, `clientperipherals.dell.com`, `downloads.dell.com` |
 | Admin rights | none | installer runs as root; its CLI needs admin |
 | What it can change on a monitor | **one feature**: brightness (VCP `0x10`) | 45 documented CLI commands: input, power, presets, KVM, firmware, PxP, webcam |
 | Which displays | any that answers DDC/CI (verified on two Dell models) | Dell only |

@@ -31,7 +31,7 @@ A lite app for the one thing you do most. If you need input switching, KVM, pres
 | **One list** | every display macOS is driving, the built-in one included, each with its own slider |
 | **Scroll the icon** | scrolling over the menu bar icon nudges the display you used last, and shows the level in place |
 | **Honest state** | a level is shown as set only once the display has reported it; failures are a symbol on the row |
-| **No network** | no URL, no socket, no updater. `scripts/check-no-network.sh` fails the build if one appears |
+| **No network** | no network API, no socket, no updater. `scripts/check-no-network.sh` fails the build if one appears. The only URLs are three links on the About screen, which open in your browser |
 | **Small** | a status item and a popover. No windows, no dock icon |
 
 ## how each display is controlled
