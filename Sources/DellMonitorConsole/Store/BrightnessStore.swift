@@ -176,13 +176,19 @@ final class BrightnessStore {
         drain(controller, id: id)
     }
 
+    /// The display the menu bar glyph shows and a scroll over it changes: the external display you used last, else the
+    /// first external one. The built-in panel is never it, so the glyph is always about the monitor.
+    var focus: Row? {
+        let externals = rows.filter { $0.kind != .builtIn }
+        return lastUsedID.flatMap { id in externals.first { $0.id == id } } ?? externals.first
+    }
+
     /// Scroll over the menu bar icon. Returns what to show: the display it landed on and its new level.
     @discardableResult
     func nudge(by delta: Int) -> (name: String, percent: Int)? {
-        let id = lastUsedID.flatMap { id in rows.contains { $0.id == id } ? id : nil } ?? rows.first?.id
-        guard let id, let row = rows.first(where: { $0.id == id }) else { return nil }
+        guard let row = focus else { return nil }
         let value = min(100, max(row.minimum, row.percent + delta))
-        set(value, for: id)
+        set(value, for: row.id)
         return (row.name, value)
     }
 

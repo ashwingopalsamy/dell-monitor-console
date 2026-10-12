@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions: [Sem
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-12
+
+### Changed
+- The menu bar glyph shows the external monitor's brightness only, never the built-in panel's, and a scroll over it
+  changes that same monitor. With no external monitor the centre dot is gone.
+
 ## [1.1.1] - 2026-10-12
 
 ### Changed

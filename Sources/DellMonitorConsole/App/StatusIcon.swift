@@ -3,8 +3,8 @@ import AppKit
 /// The menu bar glyph: the app icon's dial, redrawn heavier so it reads at 18 pt. Eleven identical rays sweep 270°
 /// round a centre dot, mirror-symmetric about the vertical axis, exactly as in the icon.
 ///
-/// It says two things at a glance. The dot is there while a display is detected, and absent when none is. The lit
-/// rays are the brightness of the display you last used; the rest stay faintly drawn, as in the icon.
+/// It says two things at a glance. The dot is there while an external monitor is detected, and absent when none is.
+/// The lit rays are that monitor's brightness, never the built-in panel's; the rest stay faintly drawn, as in the icon.
 ///
 /// The image is a template, so macOS tints it for the menu bar's light and dark appearances.
 enum StatusIcon {
@@ -18,7 +18,7 @@ enum StatusIcon {
     private static let badgeDiameter: CGFloat = 5
     private static let badgeGap: CGFloat = 1.2
 
-    /// `level` is 0...100 for the display shown, or nil when no display is detected. `attention` adds a small dot in the
+    /// `level` is 0...100 for the monitor shown, or nil when no external monitor is detected. `attention` adds a small dot in the
     /// top-right corner, cut out of the glyph, for a display that did not accept a change.
     static func image(level: Int?, attention: Bool) -> NSImage {
         let lit = level.map { min(rayCount, max(0, Int((Double($0) / 100 * Double(rayCount)).rounded()))) } ?? 0

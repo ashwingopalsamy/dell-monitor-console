@@ -105,12 +105,11 @@ final class StatusItemController: NSObject {
         }
     }
 
-    /// The glyph follows the display you last used: its brightness lights the rays, and the centre dot says a display
-    /// is there at all.
+    /// The glyph follows the external monitor you last used, never the built-in panel: its brightness lights the rays,
+    /// and the centre dot says a monitor is there at all.
     private func refreshButton() {
         guard let button = statusItem.button else { return }
-        let rows = store.rows
-        let focus = store.lastUsedID.flatMap { id in rows.first { $0.id == id } } ?? rows.first
+        let focus = store.focus
         button.image = StatusIcon.image(level: focus?.percent, attention: store.needsAttention)
         if let feedbackText {
             button.title = feedbackText
@@ -118,7 +117,7 @@ final class StatusItemController: NSObject {
         } else {
             button.title = ""
             button.imagePosition = .imageOnly
-            button.toolTip = focus.map { "\($0.name), \($0.percent)%" } ?? "No displays found"
+            button.toolTip = focus.map { "\($0.name), \($0.percent)%" } ?? "No external display found"
         }
         let summary = focus.map { "\($0.name), \($0.percent) percent" } ?? "no displays found"
         button.setAccessibilityLabel("Dell Monitor Console, \(summary)")
