@@ -4,15 +4,20 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     // Strong references: the controller holds the only pointer to its status item and window.
     private var store: BrightnessStore?
+    private var modes: ModeStore?
     private var statusItem: StatusItemController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         let store = BrightnessStore()
         self.store = store
-        let statusItem = StatusItemController(store: store)
+        let modes = ModeStore()
+        self.modes = modes
+        let statusItem = StatusItemController(store: store, modes: modes)
         self.statusItem = statusItem
         store.start()
+        // Availability is known before the first popover open.
+        modes.refresh()
         if CommandLine.arguments.contains("--show") {
             // The status item needs a run-loop turn to get its window before the popover can anchor to it.
             Task { @MainActor in

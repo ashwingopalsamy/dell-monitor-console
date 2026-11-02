@@ -2,5 +2,5 @@
   "slug": "dell-monitor-console",
   "binding": "DELL_MONITOR_CONSOLE",
   "name": "Dell Monitor Console",
-  "description": "A lite macOS menu bar app for the brightness of your Dell and other DDC/CI displays."
+  "description": "A macOS 26 menu bar panel in Liquid Glass: brightness for your Dell and other DDC/CI displays, plus Dark Mode, Night Shift and True Tone."
 }

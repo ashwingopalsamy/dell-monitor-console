@@ -8,7 +8,7 @@ struct GlassPopover<Content: View>: View {
 
     var body: some View {
         content
-            // The panel never becomes key, so a focus ring can only be spurious.
+            // The panel is key only so its glass draws active. It has no text fields, so a focus ring is only noise.
             .focusEffectDisabled()
             .frame(width: Metric.popoverWidth)
             .clipShape(.rect(cornerRadius: Metric.popoverRadius, style: .continuous))
@@ -76,14 +76,16 @@ struct Hairline: View {
     }
 }
 
-/// Neutral 24pt symbol well. No hue, ever. Decorative: the row it sits in names the display.
+/// A 28pt Liquid Glass circle round a symbol, the material of the header buttons. No hue, ever. The glass is a modifier
+/// on the glyph, so it draws behind it and no fade or group sits above it. Decorative: the row it sits in names the
+/// display.
 struct Well<Glyph: View>: View {
     @ViewBuilder var glyph: Glyph
 
     var body: some View {
         glyph
             .frame(width: Metric.well, height: Metric.well)
-            .background(Circle().fill(Palette.wellFill))
+            .glassEffect(.regular, in: .circle)
             .accessibilityHidden(true)
     }
 }
@@ -99,14 +101,29 @@ struct BrightnessSlider: View {
     private static let knobWidth: CGFloat = 26
     private static let knobHeight: CGFloat = 18
     private static let trackHeight: CGFloat = 8
+    /// The knob grows by this while held, about its own centre, so the layout and the value's position do not move.
+    private static let heldScale: CGFloat = 1.25
     /// VoiceOver steps in tens.
     private static let accessibleStep: Double = 10
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// True while the slider is pressed or dragged. Gesture state, so it also resets when a drag is cut short without
+    /// an end (the popover closing under the pointer), where an onEnded never runs.
+    @GestureState private var held = false
+
+    /// The press that began the drag, and its distance from the knob's centre if it landed on the knob. Held for the
+    /// whole drag, so pressing the knob off-centre does not move the value. A press on the bare track holds zero, so
+    /// the knob's centre jumps to the pointer. Keyed by the press, so a drag cut short without an end starts afresh.
+    @State private var grip: (start: CGFloat, offset: CGFloat)?
+
     var body: some View {
         HStack(spacing: 10) {
+            // Each sun is centred in a column as wide as the display icon, so the left one sits under the icon and the
+            // track starts where the name does.
             Image(systemName: "sun.min.fill")
                 .font(.system(size: 11))
                 .foregroundStyle(Palette.tertiary)
+                .frame(width: Metric.well)
                 .accessibilityHidden(true)
             GeometryReader { proxy in
                 let span = max(range.upperBound - range.lowerBound, 1)
@@ -122,21 +139,40 @@ struct BrightnessSlider: View {
                         .fill(.white)
                         .frame(width: Self.knobWidth, height: Self.knobHeight)
                         .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        // Held, the white gives way to clear glass that refracts the track, as the system slider's
+                        // knob does. The fade is on the white only: glass under an opacity draws nothing behind it.
+                        .opacity(held ? 0 : 1)
+                        .glassEffect(held ? .clear : .identity, in: .capsule)
+                        .scaleEffect(held && !reduceMotion ? Self.heldScale : 1)
+                        // Before the offset, so only the knob's look animates and the value still moves at once.
+                        .animation(Motion.pick(.snappy(duration: 0.2), reduceMotion), value: held)
                         .offset(x: x - Self.knobWidth / 2)
                 }
                 .frame(maxHeight: .infinity)
                 .contentShape(Rectangle())
                 .gesture(
-                    DragGesture(minimumDistance: 0).onChanged { drag in
-                        let f = min(1, max(0, (drag.location.x - Self.knobWidth / 2) / travel))
-                        value = (range.lowerBound + Double(f) * span).rounded()
-                    }
+                    DragGesture(minimumDistance: 0)
+                        .updating($held) { _, held, _ in held = true }
+                        .onChanged { drag in
+                            let offset: CGFloat
+                            if let grip, grip.start == drag.startLocation.x {
+                                offset = grip.offset
+                            } else {
+                                let fromCentre = drag.startLocation.x - x
+                                offset = abs(fromCentre) <= Self.knobWidth / 2 ? fromCentre : 0
+                                grip = (drag.startLocation.x, offset)
+                            }
+                            let f = min(1, max(0, (drag.location.x - offset - Self.knobWidth / 2) / travel))
+                            value = (range.lowerBound + Double(f) * span).rounded()
+                        }
+                        .onEnded { _ in grip = nil }
                 )
             }
             .frame(height: Metric.hitTarget)
             Image(systemName: "sun.max.fill")
                 .font(.system(size: 13))
                 .foregroundStyle(Palette.tertiary)
+                .frame(width: Metric.well)
                 .accessibilityHidden(true)
         }
         .accessibilityElement(children: .ignore)
@@ -152,48 +188,50 @@ struct BrightnessSlider: View {
     }
 }
 
-/// A round 28pt button with a symbol: refresh, settings, quit. The label is the tooltip and the VoiceOver name.
+/// A round Liquid Glass button with a symbol: back, refresh, settings, quit. The label is the tooltip and the
+/// VoiceOver name.
 struct IconButton: View {
     let symbol: String
     let label: String
     let action: () -> Void
-    @State private var hovering = false
+
+    /// Square, so the circle stays round, and smaller than the control, so the control size sets the diameter.
+    private static let glyphBox: CGFloat = 16
 
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(hovering ? Palette.label : Palette.secondary)
-                .frame(width: Metric.hitTarget, height: Metric.hitTarget)
-                .background(Circle().fill(hovering ? Palette.hoverStrong : Palette.wellFill))
-                .contentShape(Circle())
+                .frame(width: Self.glyphBox, height: Self.glyphBox)
         }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
+        // No accent tint on the glass, as macOS glass buttons are meant to be set up.
+        .tint(.clear)
+        // About Metric.hitTarget across: 28 to 29pt measured on macOS 27.
+        .controlSize(.large)
         .help(label)
         .accessibilityLabel(label)
     }
 }
 
-/// Row hover: a rounded rect concentric with the card (radius 10, inset 2), 6% fill (12% under Increase Contrast).
+/// Row hover: the content's own frame as a rounded rect, 6% fill (12% under Increase Contrast), inset 8pt from each
+/// side. With 8pt below it as well the 12pt radius is concentric with the panel's 20pt corner. The pill is also the
+/// hover area, so the pointer never lights it from outside.
 struct HoverHighlight: ViewModifier {
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
 
     func body(content: Content) -> some View {
+        let pill = RoundedRectangle(cornerRadius: Metric.hoverRadius, style: .continuous)
         content
-            .background(
-                RoundedRectangle(cornerRadius: Metric.hoverRadius, style: .continuous)
-                    .fill(contrast == .increased ? Palette.hoverStrong : Palette.hover)
-                    .padding(.horizontal, Metric.hoverInset)
-                    .padding(.vertical, 2)
-                    .opacity(hovering ? 1 : 0)
-            )
-            .contentShape(Rectangle())
+            .background(pill.fill(contrast == .increased ? Palette.hoverStrong : Palette.hover).opacity(hovering ? 1 : 0))
+            .contentShape(pill)
             .onHover { inside in
                 withAnimation(reduceMotion ? nil : Motion.hover) { hovering = inside }
             }
+            .padding(.horizontal, Metric.hoverInset)
     }
 }
 

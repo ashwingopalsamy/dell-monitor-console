@@ -16,6 +16,7 @@ macOS 26 on Apple silicon and Xcode 26 (or its Command Line Tools) are required.
 
 - The app has no network code. `scripts/check-no-network.sh` fails on any network API or URL literal under `Sources/`, comments included. A line marked `// allow-url` is exempt; justify it in the PR.
 - The app reads and writes one DDC/CI feature, brightness (VCP 0x10). Any other feature code can change a monitor's settings, so it needs a discussion first.
+- True Tone, Dark Mode and Night Shift are set on the Mac, never over DDC/CI. Switching anything else on the Mac needs a discussion first.
 - No dependencies. A new package needs a discussion first.
 
 ## Commits

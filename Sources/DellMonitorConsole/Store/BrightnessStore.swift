@@ -1,7 +1,7 @@
 import AppKit
 import Observation
 
-/// What the popover shows, and the only thing that changes displays.
+/// What the popover shows for brightness, and the only thing that changes a display's level. True Tone, Dark Mode and Night Shift live in `ModeStore`.
 ///
 /// A slider move sets a target. One writer per display sends the newest target (a fast drag collapses to the
 /// latest value), then reads the display back, and the row shows what the display reported. While that is in flight
@@ -176,17 +176,35 @@ final class BrightnessStore {
         drain(controller, id: id)
     }
 
-    /// The display the menu bar glyph shows and a scroll over it changes: the external display you used last, else the
-    /// first external one. The built-in panel is never it, so the glyph is always about the monitor.
+    /// The external display you used last, else the first external one. The built-in panel is never it: its presence
+    /// is what tells the menu bar glyph that a monitor is attached.
     var focus: Row? {
         let externals = rows.filter { $0.kind != .builtIn }
         return lastUsedID.flatMap { id in externals.first { $0.id == id } } ?? externals.first
     }
 
+    /// The display the menu bar glyph shows and a scroll over it changes: the focused monitor, else the built-in panel
+    /// when no monitor is attached.
+    var menuBarRow: Row? {
+        focus ?? rows.first { $0.kind == .builtIn }
+    }
+
+    /// Re-reads the built-in panel's level alone, with no DDC probe: its keys and auto-brightness move it behind the
+    /// app's back. A row with a write in flight is the user's, not this read's.
+    func refreshBuiltInLevel() async {
+        guard let row = rows.first(where: { $0.kind == .builtIn }), row.phase != .pending,
+              controllers[row.id]?.writer == nil,
+              let level = await controllers[row.id]?.backend.read() else { return }
+        // The row may have changed hands while the read was in flight.
+        guard let index = rows.firstIndex(where: { $0.id == row.id }), rows[index].phase != .pending,
+              controllers[row.id]?.writer == nil, rows[index].percent != level else { return }
+        rows[index].percent = level
+    }
+
     /// Scroll over the menu bar icon. Returns what to show: the display it landed on and its new level.
     @discardableResult
     func nudge(by delta: Int) -> (name: String, percent: Int)? {
-        guard let row = focus else { return nil }
+        guard let row = menuBarRow else { return nil }
         let value = min(100, max(row.minimum, row.percent + delta))
         set(value, for: row.id)
         return (row.name, value)

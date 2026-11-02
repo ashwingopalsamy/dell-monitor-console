@@ -14,7 +14,7 @@ const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const MAX_BODY = 16 * 1024;
 const MAX_BATCH = 16;
 const INSTRUCTIONS =
-  "Read-only documentation tools for Dell Monitor Console, a macOS menu bar app that sets display brightness. No credentials are needed or accepted.";
+  "Read-only documentation tools for Dell Monitor Console, a macOS menu bar panel that sets display brightness and switches Dark Mode, Night Shift and True Tone. No credentials are needed or accepted.";
 
 const CORS = {
   "access-control-allow-origin": "*",

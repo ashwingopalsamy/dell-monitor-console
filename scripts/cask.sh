@@ -10,7 +10,7 @@ cask "dell-monitor-console" do
 
   url "https://github.com/ashwingopalsamy/dell-monitor-console/releases/download/v#{version}/Dell-Monitor-Console-#{version}.dmg"
   name "Dell Monitor Console"
-  desc "Menu bar app for the brightness of your displays"
+  desc "Menu bar panel for the brightness of your displays, with Dark Mode, Night Shift and True Tone"
   homepage "https://apps.ashwingopalsamy.in/dell-monitor-console/"
 
   depends_on macos: ">= :tahoe"

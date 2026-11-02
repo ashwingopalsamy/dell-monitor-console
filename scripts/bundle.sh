@@ -31,7 +31,8 @@ fi
 rm -rf "$ICON_DIR"
 
 # Ad hoc signature: no certificate is assumed. Each rebuild changes the code identity, so grants tied to it (Keychain,
-# privacy) may prompt again after every build.
-codesign --force --deep --options runtime --sign - "$APP"
+# privacy) may prompt again after every build. The entitlement lets the Dark Mode fallback ask System Events; it prompts
+# only if that fallback runs.
+codesign --force --deep --options runtime --entitlements Resources/App.entitlements --sign - "$APP"
 
 printf '%s\n' "$PWD/$APP"

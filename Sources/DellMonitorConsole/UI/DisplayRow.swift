@@ -4,13 +4,14 @@ import SwiftUI
 struct DisplayRow: View {
     @Environment(BrightnessStore.self) private var store
     let row: BrightnessStore.Row
+    @State private var showPending = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 Well {
                     Image(systemName: row.kind == .builtIn ? "laptopcomputer" : "display")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Palette.label)
                 }
                 VStack(alignment: .leading, spacing: 1) {
@@ -35,14 +36,26 @@ struct DisplayRow: View {
                 Text("\(row.percent)%")
                     .font(.system(size: 14, weight: .medium))
                     .monospacedDigit()
-                    .foregroundStyle(row.phase == .pending ? Palette.tertiary : Palette.label)
+                    .foregroundStyle(Palette.label)
             }
             BrightnessSlider(value: level, range: Double(row.minimum)...100, backlight: row.kind != .software, label: row.name)
         }
         .padding(.horizontal, Metric.side)
-        .padding(.vertical, 14)
+        // 15pt from the hairline to the icon, and 15pt from the knob to the next hairline (the knob's frame has 5pt
+        // inside it).
+        .padding(.top, 14)
+        .padding(.bottom, 10)
         .accessibilityElement(children: .contain)
         .help(note.help)
+        // The number must not flicker during a drag; pending shows only if a write is genuinely slow (600 ms).
+        .task(id: row.phase == .pending) {
+            if row.phase == .pending {
+                try? await Task.sleep(for: .milliseconds(600))
+                if !Task.isCancelled { showPending = true }
+            } else {
+                showPending = false
+            }
+        }
     }
 
     private var level: Binding<Double> {
@@ -61,6 +74,7 @@ struct DisplayRow: View {
 
     /// The line under the name: how the display is controlled, or what went wrong with it.
     private var note: Note {
+        if showPending && row.phase == .pending { return Note(text: "Setting…") }
         switch row.phase {
         case .failed:
             return Note(symbol: "exclamationmark.triangle.fill", text: "Did not accept the change",

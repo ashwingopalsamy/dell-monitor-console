@@ -81,14 +81,20 @@ function win(id: string, metric: string, p: Pair, verdict: string, markText: str
   };
 }
 const gap = (p: Pair) => mid(p.theirsRange) / mid(p.oursRange);
+// On 2.0.0 idle CPU is in the same range as Dell's, so "less CPU" is claimed only when the gap is clear.
+const cpuLess = (p: Pair) => mid(p.oursRange) * 1.5 < mid(p.theirsRange);
 
 const f = facts as unknown as Record<string, Pair> & {
   permissions: { ours: string; theirs: string[] };
   popover: string;
 };
-const fewerPermissions = f.permissions.theirs.length - (f.permissions.ours === "none" ? 0 : f.permissions.theirs.length);
+// METRICS.md words our cell "none (Automation, only if the Dark Mode fallback runs)": "none" is how it starts, not all
+// of it. Next to Dell's count of five it is drawn as 0, and the fine print rides in the captions and pills.
+const noPermissions = /^none/i.test(f.permissions.ours);
+const permissionsOurs = noPermissions ? "0" : f.permissions.ours;
+const fewerPermissions = f.permissions.theirs.length - (noPermissions ? 0 : f.permissions.theirs.length);
 
-// In order of how much each matters to someone who only wants to set a brightness.
+// In order of how much each matters to someone who wants a menu bar panel that stays out of the way.
 export const wins: Card[] = [
   win("size", "Installed size", f.size, f.size.ratio ?? "", "Smaller", `Main executable: ${f.executable.ours} against ${f.executable.theirs}.`, oneIn(gap(f.size))),
   win(
@@ -99,7 +105,7 @@ export const wins: Card[] = [
     "Less",
     `Freshly launched, then left alone.${f.memory.theirsNote ? ` Dell's app: ${f.memory.theirs} (${f.memory.theirsNote}).` : ""}`,
   ),
-  win("cpu", "CPU, idle", f.cpu, f.cpu.oursRange[1] === 0 ? "No idle CPU" : `About ${times(gap(f.cpu))} less CPU`, "Less", "Sampled with top while idle."),
+  win("cpu", "CPU, idle", f.cpu, f.cpu.oursRange[1] === 0 ? "No idle CPU" : cpuLess(f.cpu) ? `About ${times(gap(f.cpu))} less CPU` : "About the same CPU", cpuLess(f.cpu) ? "Less" : "Same", "Sampled with top while idle."),
   win(
     "wakeups",
     "Wakeups per minute, idle",
@@ -120,11 +126,12 @@ export const wins: Card[] = [
   {
     id: "permissions",
     metric: "Privacy permissions",
-    verdict: `${fewerPermissions} permissions fewer`,
+    verdict: `${fewerPermissions} permissions fewer in normal use`,
     kind: "win",
-    ours: { value: f.permissions.ours === "none" ? "0" : f.permissions.ours, share: 0, mark: { text: "Fewer", kind: "win" } },
+    ours: { value: permissionsOurs, share: 0, mark: { text: "Fewer", kind: "win" } },
     theirs: { value: String(f.permissions.theirs.length), share: 1 },
-    caption: "Ours declares no usage descriptions and no entitlements.",
+    caption:
+      "None in normal use. Ours declares one usage description and one apple-events entitlement, used only if the Dark Mode fallback runs through System Events; macOS asks for Automation only then.",
   },
   win("files", "Files on disk", f.files, `${f.files.ratio} files`, "Fewer", undefined, oneIn(gap(f.files))),
 ];
@@ -170,19 +177,20 @@ export const tiles: Tile[] = [
     ours: f.cpu.ours,
     theirs: f.cpu.theirs,
     share: grow(mid(f.cpu.oursRange), mid(f.cpu.theirsRange)),
-    pill: f.cpu.oursRange[1] === 0 ? "none at all" : `about ${times(gap(f.cpu))} less`,
+    pill: f.cpu.oursRange[1] === 0 ? "none at all" : cpuLess(f.cpu) ? `about ${times(gap(f.cpu))} less` : "about the same",
   },
   {
     label: "Privacy permissions",
-    ours: f.permissions.ours === "none" ? "0" : f.permissions.ours,
+    ours: permissionsOurs,
     theirs: String(f.permissions.theirs.length),
     share: 0,
-    pill: `${fewerPermissions} fewer`,
+    pill: noPermissions ? "none in normal use" : `${fewerPermissions} fewer`,
   },
 ];
 
-// One sentence for search results and share cards. The numbers come from docs/METRICS.md.
-export const description = `A lite macOS menu bar app for the brightness of your Dell and other DDC/CI displays. One slider each, ${facts.size.ours} installed, no network, no permissions.`;
+// For search results and share cards. It holds no figure, so it cannot go stale when docs/METRICS.md is re-measured.
+export const description =
+  "A macOS 26 menu bar panel in Liquid Glass. It sets the brightness of the Dell and other DDC/CI displays on your Mac, the built-in one included, and switches Dark Mode, Night Shift and True Tone. No network.";
 
 const author = {
   "@type": "Person",
@@ -205,13 +213,29 @@ export function softwareApplication() {
     installUrl: absolute("#install"),
     ...(release && { softwareVersion: release.version, downloadUrl: release.dmgUrl }),
     softwareRequirements: requires,
-    keywords: ["Dell", "monitor brightness", "DDC/CI", "menu bar app", "macOS", "Apple silicon", "software dimming", "VCP 0x10"],
+    keywords: [
+      "Dell",
+      "monitor brightness",
+      "DDC/CI",
+      "menu bar app",
+      "Liquid Glass",
+      "Dark Mode",
+      "Night Shift",
+      "True Tone",
+      "macOS",
+      "Apple silicon",
+      "software dimming",
+      "VCP 0x10",
+    ],
     featureList: [
-      "One brightness slider per display, the built-in one included",
-      "Real backlight control over DDC/CI where a display answers, software dimming where it does not",
+      "Per-display brightness: one slider per display, over DDC/CI on Dell and other monitors that answer, and on the built-in display",
+      "Real backlight control where a display answers DDC/CI, software dimming where it does not",
+      "Dark Mode, Night Shift and True Tone switches, so macOS's own Display panel can stay closed",
+      "One Liquid Glass menu bar panel on macOS 26",
+      "A Display Settings shortcut that opens System Settings > Displays",
       "Scroll over the menu bar icon to nudge the display used last",
       "Every reply validated and every level read back before it is shown as set",
-      "No network, no permissions, no telemetry, no updater",
+      "No network, no telemetry, no updater, and no permissions in normal use",
     ],
     author,
     publisher: author,

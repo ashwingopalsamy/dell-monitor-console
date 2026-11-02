@@ -1,5 +1,15 @@
 [
   {
+    "id": "replaces-display-panel",
+    "q": "Does it replace the macOS Display panel?",
+    "a": "For the everyday controls, yes. It sets brightness for every display, switches Dark Mode, Night Shift and True Tone, and its Display Settings… row opens System Settings > Displays. Schedules, arrangement and resolution stay in System Settings; the app changes no Night Shift schedule or strength."
+  },
+  {
+    "id": "switches",
+    "q": "Which switches will I see?",
+    "a": "Only the ones this Mac has, as a row of three round glass circles under the displays. Dark Mode is always shown. True Tone is hidden when the Mac does not support it, and Night Shift when CoreBrightness is missing. A switch shows pending until macOS itself reports the change; if it never does, the row says \"Did not change\" and shows what macOS reported. The text under a switch is worded as macOS words it, such as \"On Until Sunrise\"."
+  },
+  {
     "id": "software-dim",
     "q": "Why does the app fall back to software dimming?",
     "a": "Not every display answers DDC/CI. Rather than show a slider that does nothing, the app dims the picture through the display's gamma table, which every display accepts. It lowers the picture, not the backlight, never goes below 10 %, and lasts only while the app runs. The row carries a half-filled circle so you know which kind of dimming you have. The choice is made again on launch, plug, wake and popover open, so a monitor that starts answering gets real backlight control without a restart."
@@ -12,23 +22,33 @@
   {
     "id": "no-permissions",
     "q": "Why does it need no permissions?",
-    "a": "Nothing it does sits behind a macOS privacy prompt. It talks to displays through IOKit, sets a gamma table and a brightness level, and receives scroll events on its own menu bar item rather than through a global event tap, so there is no Accessibility request. It declares no usage descriptions and no entitlements, and it never touches your camera, microphone, files or network."
+    "a": "Nothing it does in normal use sits behind a macOS privacy prompt. It talks to displays through IOKit, sets a gamma table and a brightness level, switches True Tone, Dark Mode and Night Shift, and receives scroll events on its own menu bar item rather than through a global event tap, so there is no Accessibility request. Its only usage description and entitlement are for Automation, and macOS asks about it only if the Dark Mode fallback runs (System Events, when the system call does not take effect). It never touches your camera, microphone, files or network."
+  },
+  {
+    "id": "automation",
+    "q": "Why might it ask for Automation?",
+    "a": "Dark Mode is switched through SkyLight. If that does not take effect within about 300 ms, the app asks System Events to do it through AppleScript, and macOS asks for Automation, once. If the first way works you are never asked. It is the only prompt the app can raise, and the app's one usage description and one entitlement exist for it."
   },
   {
     "id": "private-apis",
-    "q": "Which private APIs does it use, and what if macOS removes them?",
-    "a": "Two, both resolved at runtime with dlsym: IOAVService in IOKit for DDC/CI on Apple silicon (DDC/IOAVBridge.swift), and DisplayServices for the built-in display (Display/Backends.swift). If a future macOS removes one, the lookup fails, the app keeps running, and the affected displays fall back to software dimming instead of the app failing to launch. Private means unsupported: Apple can change them without notice."
+    "q": "Which private APIs does it use?",
+    "a": "Four, all resolved at runtime and none hard-linked: IOAVService in IOKit for DDC/CI on Apple silicon (DDC/IOAVBridge.swift), DisplayServices for the built-in display's brightness (Display/Backends.swift), CoreBrightness for the Night Shift and True Tone toggles, and SkyLight for Dark Mode and its fade (both in Display/ModeBackends.swift). Private means unsupported: Apple can change them without notice."
+  },
+  {
+    "id": "private-api-removed",
+    "q": "What happens if macOS removes a private API?",
+    "a": "Only the feature that needs it is affected, because each one is looked up at runtime and none is hard-linked, so the app still launches. Without IOAVService, monitors lose DDC/CI and fall back to software dimming. Without DisplayServices, the built-in display falls back too. Without CoreBrightness, the Night Shift and True Tone toggles are hidden. If SkyLight's Dark Mode call is gone or does not take effect, the app asks System Events instead, and macOS asks for Automation once; if only its fade symbols are gone, Dark Mode still switches, without the fade."
   },
   {
     "id": "uninstall",
     "q": "How do I uninstall it?",
-    "a": "Turn off Open at login in the popover, quit from it, and delete the app. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays. There is no installer, no helper and no root step to undo.",
-    "a_released": "Turn off Open at login in the popover, quit from it, and delete the app, or run brew uninstall --zap --cask dell-monitor-console. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays. There is no installer, no helper and no root step to undo."
+    "a": "Turn off Open at login in the popover, quit from it, and delete the app. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays, and Dark Mode, Night Shift and True Tone are macOS settings that stay as you left them. There is no installer, no helper and no root step to undo.",
+    "a_released": "Turn off Open at login in the popover, quit from it, and delete the app, or run brew uninstall --zap --cask dell-monitor-console. To clear what it stored, run defaults delete apps.ashwingopalsamy.dellmonitorconsole. A software dim ends when the app quits. A level set over DDC/CI is the monitor's own setting, so it stays, and Dark Mode, Night Shift and True Tone are macOS settings that stay as you left them. There is no installer, no helper and no root step to undo."
   },
   {
     "id": "at-login",
     "q": "Is it safe to leave open at login?",
-    "a": "Yes, that is the intended use. It is a menu bar item with no Dock icon and no timers: 27 to 29 MB of memory and 0.0 % CPU when idle, measured on one Mac. It never polls your monitors; it reads on launch, when a display is plugged in or out, on wake, and when you open the popover. Open at login is a switch in the popover, off by default, so move the app to /Applications first. With it on, a software dim is applied again after each login."
+    "a": "Yes, that is the intended use. It is a menu bar item with no Dock icon and no repeating timer while an external monitor is attached: 34 MB of memory and about 0 to 1 % CPU when idle, measured on one Mac with version 2.0.0. It never polls your monitors; it reads them on launch, when a display is plugged in or out, on wake, and when you open the popover. The one exception is the built-in display: with no external monitor attached, the menu bar icon shows its level and the app re-reads it every 2 s, because the brightness keys and auto-brightness change it behind the app's back. That read is macOS's own brightness and never touches a monitor. Open at login is a switch in the popover, off by default, so move the app to /Applications first. With it on, a software dim is applied again after each login."
   },
   {
     "id": "with-dell-app",
@@ -43,7 +63,7 @@
   {
     "id": "released",
     "q": "Is there a download, and under what licence?",
-    "a": "Not yet. There is no DMG, no Homebrew cask and no GitHub release; you build it from source, and there is nothing to fetch. A licence has not been chosen yet.",
-    "a_released": "Yes. Download the DMG from the latest GitHub release, install with brew install --cask ashwingopalsamy/tap/dell-monitor-console, or build it from source. A licence has not been chosen yet."
+    "a": "Not yet. There is no DMG, no Homebrew cask and no GitHub release; you build it from source, and there is nothing to fetch. It is source-available under the PolyForm Noncommercial License 1.0.0: free for personal and other noncommercial use, and commercial use is not allowed.",
+    "a_released": "Yes. Download the DMG from the latest GitHub release, install with brew install --cask ashwingopalsamy/tap/dell-monitor-console, or build it from source. It is source-available under the PolyForm Noncommercial License 1.0.0: free for personal and other noncommercial use, and commercial use is not allowed."
   }
 ]

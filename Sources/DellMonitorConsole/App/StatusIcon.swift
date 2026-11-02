@@ -4,7 +4,8 @@ import AppKit
 /// round a centre dot, mirror-symmetric about the vertical axis, exactly as in the icon.
 ///
 /// It says two things at a glance. The dot is there while an external monitor is detected, and absent when none is.
-/// The lit rays are that monitor's brightness, never the built-in panel's; the rest stay faintly drawn, as in the icon.
+/// The lit rays are that monitor's brightness; with none attached they are the built-in panel's, and the missing dot
+/// says so. The rest stay faintly drawn, as in the icon.
 ///
 /// The image is a template, so macOS tints it for the menu bar's light and dark appearances.
 enum StatusIcon {
@@ -18,9 +19,10 @@ enum StatusIcon {
     private static let badgeDiameter: CGFloat = 5
     private static let badgeGap: CGFloat = 1.2
 
-    /// `level` is 0...100 for the monitor shown, or nil when no external monitor is detected. `attention` adds a small dot in the
-    /// top-right corner, cut out of the glyph, for a display that did not accept a change.
-    static func image(level: Int?, attention: Bool) -> NSImage {
+    /// `level` is 0...100 for the display shown, or nil when there is none. `monitor` is true while an external monitor is
+    /// detected and draws the centre dot. `attention` adds a small dot in the top-right corner, cut out of the glyph,
+    /// for a display that did not accept a change.
+    static func image(level: Int?, monitor: Bool, attention: Bool) -> NSImage {
         let lit = level.map { min(rayCount, max(0, Int((Double($0) / 100 * Double(rayCount)).rounded()))) } ?? 0
         let image = NSImage(size: NSSize(width: size, height: size), flipped: false) { rect in
             let centre = CGPoint(x: rect.midX, y: rect.midY)
@@ -37,7 +39,7 @@ enum StatusIcon {
                 NSColor.black.withAlphaComponent(index < lit ? 1 : unlit).setStroke()
                 ray.stroke()
             }
-            if level != nil {
+            if monitor {
                 NSColor.black.setFill()
                 NSBezierPath(ovalIn: NSRect(x: centre.x - diskRadius, y: centre.y - diskRadius,
                                             width: diskRadius * 2, height: diskRadius * 2)).fill()
