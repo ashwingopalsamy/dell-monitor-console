@@ -11,7 +11,6 @@ enum Palette {
     static let secondary = Color(nsColor: .secondaryLabelColor)
     static let tertiary = Color(nsColor: .tertiaryLabelColor)
     static let separator = Color(nsColor: .separatorColor)
-    static let wellFill = Color(nsColor: .systemFill)
     static let trackFill = Color(nsColor: .secondarySystemFill)
     static let groupFill = Color(nsColor: .tertiarySystemFill)
     static let hover = Color.primary.opacity(0.06)
@@ -29,10 +28,13 @@ enum Metric {
     static let side: CGFloat = 16
     static let content: CGFloat = 288
     static let header: CGFloat = 40
-    static let well: CGFloat = 24
+    /// The round glass icon, the same size as the header buttons.
+    static let well: CGFloat = 28
     static let hitTarget: CGFloat = 28
-    static let hoverRadius: CGFloat = 10
-    static let hoverInset: CGFloat = 10
+    /// A hover pill sits 8pt in from the panel's edge, so its 12pt radius is concentric with the 20pt corner.
+    static let hoverRadius: CGFloat = 12
+    static let hoverInset: CGFloat = 8
+    static let rowPill: CGFloat = 28
     static let nameRow: CGFloat = 36
 }
 

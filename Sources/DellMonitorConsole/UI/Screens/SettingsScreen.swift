@@ -11,7 +11,7 @@ struct SettingsRow<Control: View>: View {
             if let symbol {
                 Well {
                     Image(systemName: symbol)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Palette.label)
                 }
             }

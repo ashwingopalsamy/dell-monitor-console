@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Dial from "../components/Dial.astro";
+import ModeGlyph from "../components/ModeGlyph.astro";
 import Row from "../components/Row.astro";
 import Side from "../components/Side.astro";
 import Versus from "../components/Versus.astro";
@@ -16,6 +17,7 @@ const nodes = [webSite(), softwareApplication(), sourceCode(), howToInstall(), f
 const build = install.source.join("\n");
 const github = "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z";
 const nav: { id: string; label: string; icon: string[] }[] = [
+  { id: "panel", label: "Panel", icon: ["M6.5 4h11a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z", "M7.5 9.5h9", "M7.4 15a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0", "M10.9 15a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0", "M14.4 15a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0"] },
   { id: "numbers", label: "Numbers", icon: ["M5 20v-7", "M12 20V5", "M19 20v-10"] },
   { id: "control", label: "Control", icon: ["M4 7h9", "M17 7h3", "M4 17h3", "M11 17h9", "M15 7m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0", "M9 17m-2 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0"] },
   { id: "twice", label: "Why twice", icon: ["M6.5 6.5 12 12l-5.5 5.5", "M13 6.5 18.5 12 13 17.5"] },
@@ -25,6 +27,19 @@ const nav: { id: string; label: string; icon: string[] }[] = [
 ];
 
 const perms = facts.permissions.theirs;
+
+// The replica's three switches, in the state the real panel shows them at first. A switch that follows a schedule
+// says until when; a change by hand turns that into "Until Tomorrow", as macOS words it (the script does that part).
+const modes: { id: "dark" | "night" | "tone"; name: string; on: boolean; until?: string }[] = [
+  { id: "dark", name: "Dark Mode", on: true, until: "Sunrise" },
+  { id: "night", name: "Night Shift", on: false, until: "22:00" },
+  { id: "tone", name: "True Tone", on: true },
+];
+const rebuilt = [
+  { id: "dark", name: "Dark Mode", line: "Cross-fades across the screen, as the system's own switch does." },
+  { id: "night", name: "Night Shift", line: 'Follows your schedule; a manual change reads "Until Tomorrow", as macOS words it.' },
+  { id: "tone", name: "True Tone", line: "Shown only on Macs whose display has it." },
+] as const;
 
 ---
 <Base home title={NAME} description={description} nodes={nodes}>
@@ -49,21 +64,23 @@ const perms = facts.permissions.theirs;
   <main id="main">
     <section id="top" class="hero" aria-labelledby="h-top">
       <div class="copy">
-        <h1 id="h-top"><span class="hl1">Display brightness,</span> <span class="hl1 dim">and nothing else.</span></h1>
-        <p>A lite menu bar app for the one thing people open Dell's app for: one slider per display. No network, no permissions.</p>
+        <h1 id="h-top"><span class="hl1">One panel for</span> <span class="hl1 dim">every display on your Mac.</span></h1>
+        <p>Set the backlight of your Dell monitors and the built-in display, and switch Dark Mode, Night Shift and True Tone, from one Liquid Glass panel in the menu bar. No network.</p>
       </div>
 
-      <div class="stage" data-console style="--l:0.75">
+      {/* The monitor is the Dell: its row's slider and the dial move one level. Dark Mode and Night Shift change its
+          picture; True Tone does not, because only the built-in display has True Tone. */}
+      <div class="stage" data-console data-dark="on" data-night="off" data-tone="on" style="--l:0.6">
         <div class="rig">
           <div class="bloom" aria-hidden="true"></div>
           <div class="monitor" aria-hidden="true">
             <div class="screen">
               <div class="picture"><i class="win a"></i><i class="win b"></i><i class="mbar"></i></div>
-              <Dial level={75} id="hero" glow class="big" />
+              <Dial level={60} id="hero" glow class="big" />
             </div>
           </div>
           <div class="stand" aria-hidden="true"><i class="neck"></i><i class="foot"></i></div>
-          <div class="pop" role="group" aria-label="Replica of the app's popover">
+          <div class="pop" role="group" aria-label="Replica of the app's panel">
             <div class="pop-h" aria-hidden="true">
               <span>Displays</span>
               <span class="btns2">
@@ -72,9 +89,22 @@ const perms = facts.permissions.theirs;
                 <span class="rbtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v6.2" /><path d="M5.6 5.9a5.9 5.9 0 1 0 8.8 0" /></svg></span>
               </span>
             </div>
-            <div class="pop-body"><Row name="DELL U2723QE" level={75} live /></div>
+            <Row name="Built-in Retina Display" level={75} kind="laptop" live />
+            <Row name="DELL U2723QE" level={60} live dial />
+            <div class="modes">
+              {modes.map((m) => (
+                <button class="mode" type="button" data-mode={m.id} data-until={m.until} aria-pressed={m.on ? "true" : "false"} aria-describedby={`mode-${m.id}`} disabled>
+                  <span class="orb"><ModeGlyph mode={m.id} /></span>
+                  <span class="mn">{m.name}</span>
+                  <span class="ms" id={`mode-${m.id}`} aria-hidden="true" data-state>
+                    {m.until ? <><span>{m.on ? "On" : "Off"} Until</span> <span>{m.until}</span></> : <span>{m.on ? "On" : "Off"}</span>}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div class="pop-f" aria-hidden="true"><span>Display Settings…</span></div>
           </div>
-          <p class="hint" id="console-hint">Drag the slider or the dial. Arrow keys work.</p>
+          <p class="hint" id="console-hint">Drag a slider or the dial, or flip a switch. Arrow keys work.</p>
         </div>
       </div>
 
@@ -112,11 +142,33 @@ const perms = facts.permissions.theirs;
       </div>
     </section>
 
+    <section id="panel" class="sec" aria-labelledby="h-panel">
+      <Side id="panel" eyebrow="The Display panel, rebuilt" title="Leave macOS's Display panel closed." lede="Brightness for every display, and the three switches you reach for next to it, in the same glass." />
+      <div class="body rebuilt">
+        <img class="shot" src={`${BASE}screens/popover.png`} width="384" height="410" loading="lazy" decoding="async" alt="The panel: a brightness slider for the built-in display and for a Dell monitor, then Dark Mode, Night Shift and True Tone, then Display Settings." />
+        <div>
+          <dl class="ml">
+            {rebuilt.map((r) => (
+              <div>
+                <dt><ModeGlyph mode={r.id} />{r.name}</dt>
+                <dd>{r.line}</dd>
+              </div>
+            ))}
+          </dl>
+          <div class="mbi">
+            <img src={`${BASE}screens/menubar-icon.png`} width="32" height="31" loading="lazy" decoding="async" alt="The menu bar icon: a dial whose lit rays follow a display's brightness." />
+            <p>The menu bar icon is the dial. Its lit rays follow the display you used last, or the built-in display when no monitor is attached.</p>
+          </div>
+          <p class="aside">Schedules, arrangement and resolution stay in System Settings; the Display Settings… row opens it.</p>
+        </div>
+      </div>
+    </section>
+
     <section id="numbers" class="sec num" aria-labelledby="h-numbers">
       <div class="num-head">
         <p class="eyebrow">By the numbers</p>
-        <h2 id="h-numbers">Smaller, quieter, and it asks for nothing.</h2>
-        <p class="num-sub">Measured against Dell's Display and Peripheral Manager 2.3, on one M4 Pro Mac with a Dell U2723QE and a U2424HE.</p>
+        <h2 id="h-numbers">Smaller, lighter, and it asks for nothing in normal use.</h2>
+        <p class="num-sub">Measured against Dell's Display and Peripheral Manager 2.3, on one M4 Pro Mac. This app was measured on 2.0.0 with a Dell U2424HE; rows noted 1.1.2 come from the previous release, measured with a U2723QE as well.</p>
       </div>
       <Versus names={perms} />
       <details class="raw">
@@ -126,14 +178,14 @@ const perms = facts.permissions.theirs;
     </section>
 
     <section id="more" class="sec" aria-labelledby="h-more">
-      <Side id="more" eyebrow="Where DDPM does more" title="A lite app, not a replacement." lede="It is for the one task most people open Dell's app for. Keep Dell's app for the rest." />
+      <Side id="more" eyebrow="Where DDPM does more" title="Not a replacement for Dell's app." lede="It covers what most people open Dell's app for: brightness. Keep Dell's app for the rest." />
       <div class="body more"><More.Content /></div>
     </section>
 
     <section id="control" class="sec" aria-labelledby="h-control">
       <Side id="control" eyebrow="How it controls a display" title="Real backlight where a display answers. A dim where it does not." lede={lede.control} />
       <div class="body">
-        <ul class="paths" aria-label="One row per display, as the popover draws them">
+        <ul class="paths" aria-label="One row per display, as the panel draws them">
           <li><div class="mini-card"><Row name="DELL U2723QE" level={60} /></div><span class="tag">Hardware</span></li>
           <li><div class="mini-card"><Row name="Built-in display" level={85} kind="laptop" /></div><span class="tag">Built-in</span></li>
           <li><div class="mini-card"><Row name="Monitor without DDC/CI" level={40} glyph="half" /></div><span class="tag">Software dim</span></li>
@@ -207,5 +259,6 @@ const perms = facts.permissions.theirs;
   <script>
     import "../scripts/page";
     import "../scripts/dial";
+    import "../scripts/modes";
   </script>
 </Base>

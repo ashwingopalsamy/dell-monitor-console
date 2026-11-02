@@ -11,13 +11,13 @@ struct FaqScreen: View {
         ("What does the question mark mean?",
          "The write went through, but the display did not report the new level back. The app shows a level as set only once the display has confirmed it."),
         ("Why does it need no permissions?",
-         "Brightness goes straight to the display over its cable. Scrolling over the menu bar icon is received by the app's own status item, so there is no Accessibility request."),
+         "Brightness goes straight to the display over its cable. Scrolling over the menu bar icon is received by the app's own status item, so there is no Accessibility request. The one exception: if the system's own Dark Mode switch does not take effect, the app asks System Events instead, and macOS asks for Automation once."),
         ("Does it work with other brands?",
          "It is verified on two Dell models. Any display that answers DDC/CI should work, and one that does not falls back to software dimming."),
         ("Can it run next to Dell's app?",
          "Yes. Both talk to a display over the same channel, so an answer meant for one can reach the other. The app checks every reply and asks again, so the cost is an occasional retry."),
         ("What if macOS removes the private APIs?",
-         "DDC/CI and the built-in brightness use private macOS interfaces, loaded at runtime. If one goes away, displays fall back to software dimming and the app keeps running."),
+         "DDC/CI and the built-in brightness use private macOS interfaces, loaded at runtime. If one goes away, displays fall back to software dimming and the app keeps running. The True Tone, Dark Mode and Night Shift toggles use private interfaces too; if one goes away, that toggle is hidden, or Dark Mode uses System Events."),
     ]
 
     var body: some View {

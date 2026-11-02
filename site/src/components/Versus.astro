@@ -10,14 +10,27 @@ const times = (n: number) => `${n >= 10 ? Math.round(n) : Math.round(n * 10) / 1
 const wakeLo = Math.round(f.wakeups.theirsRange[0] / mid(f.wakeups.oursRange));
 const wakeHi = Math.round(f.wakeups.theirsRange[1] / mid(f.wakeups.oursRange));
 
-const rows = [
+// CPU: "None" only for a flat zero. Otherwise the words claim no more than the figures show, which near zero on both
+// sides is often nothing.
+const cpuZero = f.cpu.oursRange[1] === 0;
+const cpuRatio = mid(f.cpu.theirsRange) / Math.max(mid(f.cpu.oursRange), 1e-9);
+const cpuSays = cpuZero ? "None" : cpuRatio >= 1.25 ? `${times(cpuRatio)} less` : cpuRatio <= 0.8 ? `${times(1 / cpuRatio)} more` : "About even";
+// Permissions: METRICS says "none", and may add in brackets when one is asked for anyway (Automation, for the Dark
+// Mode fallback). The count is for normal use, and the row says so when there is such a bracket.
+const theirPerms = f.permissions.theirs.length;
+const permsNone = /^none/i.test(f.permissions.ours);
+const ourPerms = permsNone ? 0 : String(f.permissions.ours).split(/\s*\(/)[0].split(/,\s*/).length;
+const permsNote = /\(/.test(f.permissions.ours) ? "in normal use" : null;
+
+const rows: { label: string; note?: string | null; us: string; them: string; x: number; says: string }[] = [
   { label: "Installed size", us: f.size.ours, them: f.size.theirs, x: x("size"), says: f.size.ratio },
   { label: "Memory, idle", us: f.memory.ours, them: f.memory.theirs, x: x("memory"), says: `${times(mid(f.memory.theirsRange) / mid(f.memory.oursRange))} less` },
-  { label: "CPU, idle", us: f.cpu.ours, them: f.cpu.theirs, x: 0, says: "None" },
+  { label: "CPU, idle", us: f.cpu.ours, them: f.cpu.theirs, x: cpuZero ? 0 : x("cpu"), says: cpuSays },
   { label: "Wakeups a minute, idle", us: f.wakeups.ours, them: f.wakeups.theirs, x: x("wakeups"), says: `${wakeLo}–${wakeHi}× fewer` },
-  { label: "Privacy permissions", us: "0", them: String(f.permissions.theirs.length), x: 0, says: `${f.permissions.theirs.length} fewer` },
+  { label: "Privacy permissions", note: permsNote, us: String(ourPerms), them: String(theirPerms), x: ourPerms / theirPerms, says: `${theirPerms - ourPerms} fewer` },
 ];
 // A label sits centred over its dot, unless the dot is near an end, where it hangs inward so it never leaves the line.
+// Near Dell's end the two labels would land on each other, so that row marks itself a tie.
 const edge = (v: number) => (v < 0.14 ? "start" : v > 0.86 ? "end" : "mid");
 ---
 <div class="pl">
@@ -29,8 +42,8 @@ const edge = (v: number) => (v < 0.14 ? "start" : v > 0.86 ? "end" : "mid");
   <ul class="pl-list">
     {rows.map((r) => (
       <li class="pl-row">
-        <span class="pl-k">{r.label}</span>
-        <div class="pl-plot" style={`--x:${r.x.toFixed(4)}`} role="img" aria-label={`${r.label}: this app ${r.us}, Dell's app ${r.them}`}>
+        <span class="pl-k">{r.label}{r.note && <span class="pl-note">{r.note}</span>}</span>
+        <div class="pl-plot" style={`--x:${r.x.toFixed(4)}`} data-tie={r.x > 0.86 ? "" : undefined} role="img" aria-label={`${r.label}${r.note ? `, ${r.note}` : ""}: this app ${r.us}, Dell's app ${r.them}`}>
           <span class="pl-axis"></span>
           <span class="pl-gap"></span>
           <i class="pl-dot us" data-edge={edge(r.x)}><b>{r.us}</b></i>
@@ -40,5 +53,5 @@ const edge = (v: number) => (v < 0.14 ? "start" : v > 0.86 ? "end" : "mid");
       </li>
     ))}
   </ul>
-  <p class="pl-foot">No network code. Nothing runs between adjustments. Dell's app has its own update channel built in.</p>
+  <p class="pl-foot">No network code. Monitors are never polled in the background. Dell's app has its own update channel built in.{permsNote && " Automation is asked for only if the Dark Mode fallback runs."}</p>
 </div>

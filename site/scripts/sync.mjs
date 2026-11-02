@@ -36,11 +36,11 @@ const gate = (md) =>
 // A page is one document. A section is the part of a page that one block of the site renders.
 const pages = [
   { slug: "metrics", src: "docs/METRICS.md", title: "By the numbers", anchor: "#numbers",
-    description: "Measured on one M4 Pro Mac with a Dell U2723QE and a U2424HE, on 2026-10-11 and 12. Dell's app, Display and Peripheral Manager 2.3 (DDPM), was launched once, sampled and quit; its install size and history come from its files and its own log." },
+    description: "Measured on one M4 Pro Mac: version 2.0.0 on 2026-11-02 with a Dell U2424HE, and the rows marked 1.1.2 on 2026-10-11 and 12 with a Dell U2723QE and a U2424HE. Dell's app, Display and Peripheral Manager 2.3 (DDPM), was launched once, sampled and quit; its install size and history come from its files and its own log." },
   { slug: "how-it-works", src: "docs/HOW-IT-WORKS.md", title: "How it works", anchor: "#control",
-    description: "One slider per display: real backlight where a display answers DDC/CI, a software dim where it does not, macOS for the built-in panel. Every request goes twice and every reply is validated." },
+    description: "One slider per display: real backlight where a display answers DDC/CI, a software dim where it does not, macOS for the built-in panel. Every request goes twice and every reply is validated. Dark Mode, Night Shift and True Tone are set on the Mac, not over DDC/CI." },
   { slug: "privacy", src: "docs/PRIVACY.md", title: "Privacy", anchor: "#privacy",
-    description: "No network, no permissions, no telemetry, and the commands to check it yourself." },
+    description: "No network, no permissions in normal use, no telemetry, and the commands to check it yourself." },
   { slug: "install", src: "docs/INSTALL.md", title: "Install", anchor: "#install",
     description: released
       ? "Homebrew, the DMG, or from source. Needs macOS 26 on Apple silicon."
@@ -269,10 +269,10 @@ knowledge.site = {
     ? `Version ${version}. Download the DMG, install with Homebrew, or build it from source.`
     : "Not released yet. There is no DMG, no Homebrew cask and no GitHub release; build it from source.",
   summary:
-    `A macOS 26+ menu bar app that sets the brightness of the displays attached to your Mac, and nothing else: one popover, one slider per display, the built-in one included. ` +
+    `A macOS 26+ menu bar panel in Liquid Glass. It sets the brightness of the Dell and other DDC/CI displays attached to your Mac, the built-in one included, one slider each, and switches Dark Mode, Night Shift and True Tone, so macOS's own Display panel can stay closed. ` +
     `Real backlight control over DDC/CI where a display answers, software dimming where it does not. ` +
-    `${f.size.ours} installed (Dell's own app: ${f.size.theirs}), ${f.memory.ours} of memory when idle (${f.memory.theirs}), no network, no permissions, no telemetry, and it never polls your monitors. ` +
-    `A lite app for the one task people open Dell's app for, not a replacement for everything. Made by Ashwin Gopalsamy. ` +
+    `${f.size.ours} installed (Dell's own app: ${f.size.theirs}), ${f.memory.ours} of memory when idle (${f.memory.theirs}), no network, no permissions in normal use, no telemetry, and it never polls your monitors. ` +
+    `On a monitor it sends one DDC/CI feature, brightness: keep Dell's app for input switching, KVM, presets or firmware. Made by Ashwin Gopalsamy. ` +
     `${released ? `Version ${version}: download the DMG, install with Homebrew, or build from source.` : "Not released yet: build from source."} Not affiliated with, endorsed by or supported by Dell.`,
   ledes,
 };
@@ -299,13 +299,15 @@ knowledge.install = release
   : { source, cli };
 knowledge.privacy = {
   network: "none: no network API and no socket in the sources, enforced by scripts/check-no-network.sh; three About links open in your browser",
-  permissions: "none: no usage descriptions, no entitlements",
+  permissions:
+    "none in normal use: one usage description (NSAppleEventsUsageDescription) and one entitlement (apple-events), used only if the Dark Mode fallback through System Events runs; macOS asks for Automation only then",
   telemetry: false,
   analytics: false,
   updater: false,
   dependencies: 0,
   stores: "UserDefaults apps.ashwingopalsamy.dellmonitorconsole: the display used last, and the level of each software-dimmed display",
-  sends: "one DDC/CI feature, brightness (VCP 0x10), to the displays; no power, input, preset or vendor commands",
+  sends:
+    "one DDC/CI feature, brightness (VCP 0x10), to the displays; no power, input, preset or vendor commands. True Tone, Dark Mode and Night Shift are set on the Mac, never over DDC/CI",
 };
 
 writeFileSync(join(root, "src/generated/knowledge.json"), JSON.stringify(knowledge, null, 2));

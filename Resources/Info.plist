@@ -15,13 +15,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.2</string>
+	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Dell Monitor Console asks System Events to switch Dark Mode only if the built-in way does not work.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 Ashwin Gopalsamy. Not affiliated with, endorsed by or supported by Dell.</string>
 </dict>

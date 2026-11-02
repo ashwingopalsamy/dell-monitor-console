@@ -16,7 +16,7 @@ npm run deploy     # build, then wrangler deploy the app Worker
   `src/content-md/` (rendered into the page sections, shell blocks highlighted at build time, tables made responsive)
   and `src/generated/knowledge.json`. Every number on the page is read from `docs/METRICS.md`; a row the page needs
   that goes missing fails the build. Edit the sources, not the generated files.
-- **Release switch**: `release.json` is `{"version": null}` until there is a release. While it is null the page says
+- **Release switch**: `release.json` holds the released version as `x.y.z` (currently `1.1.2`). `{"version": null}` means unreleased. While it is null the page says
   "not released yet" and offers only the build-from-source commands. Set it to `"1.0.0"` (or the real version) and the
   hero offers the DMG at `releases/download/v<version>/Dell-Monitor-Console-<version>.dmg`, a copy-able Homebrew
   command and "Other ways to install", and the Install section, FAQ, `llms.txt`, `index.md` and MCP tools follow.

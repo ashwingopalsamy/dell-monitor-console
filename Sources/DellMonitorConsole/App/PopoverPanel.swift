@@ -1,7 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Never becomes key. The popover has no text fields, so the panel never needs keyboard focus.
+/// Becomes key while shown. The popover has no text fields, but Liquid Glass draws its inactive look in a window that
+/// is not key: it drops every tint and frosts clear glass over what sits on it.
 @MainActor
 final class PopoverPanel: NSPanel {
     init(contentRect: NSRect) {
@@ -26,7 +27,7 @@ final class PopoverPanel: NSPanel {
         hidesOnDeactivate = false
     }
 
-    override var canBecomeKey: Bool { false }
+    override var canBecomeKey: Bool { true }
 }
 
 private enum PopoverStyle {
@@ -42,7 +43,8 @@ private enum PopoverStyle {
     static let escapeKeyCode: UInt16 = 53
 }
 
-/// Accepts the first mouse. The panel never becomes key, so AppKit's default would swallow the first click on a control.
+/// Accepts the first mouse, so a click still reaches its control while the panel is not key: AppKit's default would
+/// swallow it.
 @MainActor
 private final class PopoverHostingView: NSHostingView<AnyView> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
@@ -57,6 +59,7 @@ private final class PopoverHostingView: NSHostingView<AnyView> {
 @MainActor
 final class PopoverWindow {
     private let store: BrightnessStore
+    private let modes: ModeStore
     private let navigator = PopoverNavigator()
     private let panel = PopoverPanel(contentRect: .zero)
     private let container = NSView()
@@ -72,8 +75,9 @@ final class PopoverWindow {
     private(set) var isShown = false
     var onVisibilityChange: ((Bool) -> Void)?
 
-    init(store: BrightnessStore) {
+    init(store: BrightnessStore, modes: ModeStore) {
         self.store = store
+        self.modes = modes
         container.wantsLayer = true
         hostingView.frame = container.bounds
         hostingView.autoresizingMask = [.width, .height]
@@ -100,16 +104,19 @@ final class PopoverWindow {
         panel.ignoresMouseEvents = true
         panel.setFrame(frame, display: true)
         // Activation takes focus from the user's app, deliberately: the Escape monitor below only sees key events
-        // while this app is active. The panel itself never becomes key.
+        // while this app is active, and the panel's glass draws active only while the panel is key.
         NSApp.activate()
         panel.alphaValue = 0
         panel.orderFrontRegardless()
+        // Ordering front alone does not make the panel key.
+        panel.makeKey()
         fade(to: 1)
         animateScale(from: PopoverStyle.collapsedScale, to: 1)
         installMonitors()
         onVisibilityChange?(true)
         // The hosting view outlives each open, so levels changed from the monitor's own buttons are re-read here.
         store.refreshIfStale()
+        modes.refresh()
     }
 
     func hide(restoringFocus: Bool = true) {
@@ -137,9 +144,11 @@ final class PopoverWindow {
             rootView: AnyView(
                 PopoverRoot(
                     onQuit: { NSApp.terminate(nil) },
+                    onDismiss: { [weak self] in self?.hide(restoringFocus: false) },
                     onHeightChange: { [weak self] height in self?.surfaceHeightChanged(to: height) }
                 )
                 .environment(store)
+                .environment(modes)
                 .environment(navigator)
             )
         )

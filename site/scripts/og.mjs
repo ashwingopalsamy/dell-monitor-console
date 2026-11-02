@@ -25,11 +25,14 @@ const row = (style, children) => el("div", { display: "flex", ...style }, childr
 const layer = (src, size) => ({ type: "img", props: { src, width: size, height: size, style: { position: "absolute", left: 0, top: 0 } } });
 const icon = (size) => row({ position: "relative", width: size, height: size }, [layer(tile, size), layer(glyph, size)]);
 
+// METRICS may qualify "none" in brackets (Automation, only if the Dark Mode fallback runs), so the card says the count
+// is for normal use when it does.
+const perms = facts.permissions.ours;
 const figures = [
   [facts.size.ours, "installed"],
   [facts.memory.ours, "memory, idle"],
   [facts.cpu.ours, "CPU, idle"],
-  [facts.permissions.ours === "none" ? "0" : facts.permissions.ours, "permissions"],
+  [/^none/i.test(perms) ? "0" : perms.split(/\s*\(/)[0], /\(/.test(perms) ? "permissions, normal use" : "permissions"],
 ];
 
 // A margin, not padding, keeps the 72px frame whatever box model the layout engine assumes.
@@ -45,13 +48,14 @@ const inner = row(
     ]),
     row({ alignItems: "center", justifyContent: "space-between" }, [
       row({ flexDirection: "column", gap: 20 }, [
-        el("div", { display: "flex", flexDirection: "column", fontSize: 70, fontWeight: 600, letterSpacing: -3, lineHeight: 1.04 }, [
-          el("div", { display: "flex", color: "#f5f5f7" }, "Display brightness,"),
-          el("div", { display: "flex", color: "#a3a6ad" }, "and nothing else."),
+        // The second line is the long one; 64px keeps it, and the sub line, clear of the icon.
+        el("div", { display: "flex", flexDirection: "column", fontSize: 64, fontWeight: 600, letterSpacing: -2.6, lineHeight: 1.04 }, [
+          el("div", { display: "flex", color: "#f5f5f7" }, "One panel for"),
+          el("div", { display: "flex", color: "#a3a6ad" }, "every display on your Mac."),
         ]),
-        el("div", { display: "flex", fontSize: 28, color: "#8a8d94" }, "A lite menu bar app for your Dell and other DDC/CI displays."),
+        el("div", { display: "flex", fontSize: 25, color: "#8a8d94" }, "Brightness, Dark Mode, Night Shift and True Tone. No network."),
       ]),
-      icon(250),
+      icon(200),
     ]),
     row({ gap: 56 }, figures.map(([n, t]) =>
       row({ flexDirection: "column", gap: 2 }, [

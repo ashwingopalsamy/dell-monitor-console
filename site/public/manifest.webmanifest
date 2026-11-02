@@ -1,7 +1,7 @@
 {
   "name": "Dell Monitor Console",
   "short_name": "Monitor Console",
-  "description": "A macOS menu bar app for the brightness of your displays.",
+  "description": "A macOS menu bar panel for the brightness of your displays, with Dark Mode, Night Shift and True Tone.",
   "id": "/dell-monitor-console/",
   "start_url": "/dell-monitor-console/",
   "scope": "/dell-monitor-console/",

@@ -8,6 +8,7 @@ final class StatusItemController: NSObject {
     /// Trackpad points of scrolling per 1%, and percent per notch of a wheel.
     private static let pointsPerPercent: CGFloat = 6
     private static let percentPerNotch = 5
+    private static let builtInPoll: Duration = .seconds(2)
 
     private let store: BrightnessStore
     private let statusItem: NSStatusItem
@@ -15,14 +16,15 @@ final class StatusItemController: NSObject {
     private var scrollMonitor: Any?
     private var scrollRemainder: CGFloat = 0
     private var feedback: Task<Void, Never>?
+    private var builtInWatch: Task<Void, Never>?
     /// The level shown beside the glyph for a moment after a scroll. nil the rest of the time.
     private var feedbackText: String?
 
-    init(store: BrightnessStore) {
+    init(store: BrightnessStore, modes: ModeStore) {
         self.store = store
         // Only as wide as the glyph. A scroll adds the new level beside it for a moment.
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        popover = PopoverWindow(store: store)
+        popover = PopoverWindow(store: store, modes: modes)
         super.init()
 
         if let button = statusItem.button {
@@ -105,21 +107,41 @@ final class StatusItemController: NSObject {
         }
     }
 
-    /// The glyph follows the external monitor you last used, never the built-in panel: its brightness lights the rays,
-    /// and the centre dot says a monitor is there at all.
+    /// The glyph follows the external monitor you last used: its brightness lights the rays, and the centre dot says a
+    /// monitor is there at all. With none attached the rays are the built-in panel's, and the dot is gone.
     private func refreshButton() {
         guard let button = statusItem.button else { return }
-        let focus = store.focus
-        button.image = StatusIcon.image(level: focus?.percent, attention: store.needsAttention)
+        let monitor = store.focus
+        let focus = store.menuBarRow
+        watchBuiltIn(monitor == nil && focus != nil)
+        button.image = StatusIcon.image(level: focus?.percent, monitor: monitor != nil, attention: store.needsAttention)
         if let feedbackText {
             button.title = feedbackText
             button.imagePosition = .imageLeading
         } else {
             button.title = ""
             button.imagePosition = .imageOnly
-            button.toolTip = focus.map { "\($0.name), \($0.percent)%" } ?? "No external display found"
+            button.toolTip = focus.map { "\($0.name), \($0.percent)%" } ?? "No display found"
         }
         let summary = focus.map { "\($0.name), \($0.percent) percent" } ?? "no displays found"
         button.setAccessibilityLabel("Dell Monitor Console, \(summary)")
+    }
+
+    /// While the built-in panel is what the glyph shows, its level is re-read every couple of seconds, because its keys
+    /// and auto-brightness change it without telling the app. The task stops when a monitor takes the glyph over.
+    private func watchBuiltIn(_ needed: Bool) {
+        guard needed else {
+            builtInWatch?.cancel()
+            builtInWatch = nil
+            return
+        }
+        guard builtInWatch == nil else { return }
+        builtInWatch = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.builtInPoll, tolerance: .milliseconds(500))
+                guard !Task.isCancelled, let self else { return }
+                await self.store.refreshBuiltInLevel()
+            }
+        }
     }
 }
